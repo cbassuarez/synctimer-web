@@ -1,0 +1,19 @@
+{
+"applinks": {
+"apps": [],
+"details": [
+{
+"appID": "S74572Q65M.com.StageDevices.SyncTimer",
+"paths": [
+"/join",
+"/join/*"
+]
+}
+]
+},
+"appclips": {
+"apps": [
+"S74572Q65M.com.StageDevices.SyncTimer.Clip"
+]
+}
+}

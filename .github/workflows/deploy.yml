@@ -31,10 +31,16 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
+      - name: Verify AASA in artifact
+        run: |
+          test -f dist/apple-app-site-association
+          test -f dist/.well-known/apple-app-site-association
+          test -f dist/.nojekyll
+          echo "AASA + nojekyll present in dist"
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs
+          path: dist
 
   deploy:
     runs-on: ubuntu-latest
