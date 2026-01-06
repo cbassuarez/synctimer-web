@@ -1,6 +1,6 @@
 # SyncTimer QR Generator
 
-Single-page generator for SyncTimer join links and QR codes. Built with Vite + React + TypeScript + Framer Motion.
+Single-page generator for SyncTimer join links and QR codes. Built with Vite + React + TypeScript.
 
 ## Features
 - Paste Host Share Link(s) to build a host list; de-dupes by UUID.
@@ -32,7 +32,7 @@ The static assets land in `dist/`.
 1. Build the project: `npm run build`.
 2. Deploy the `dist/` folder to Pages. If using the `gh-pages` branch, copy the contents of `dist/` there.
 3. Include the `.nojekyll` file in the published root to bypass the default Jekyll build (prevents missing `docs` errors).
-4. If you publish under a subpath, update `base` in `vite.config.ts` to that path (e.g., `/synctimer-web/`).
+4. The Vite config sets `base: './'` so built assets resolve when the site is served from any subpath (e.g., `https://cbassuarez.github.io/synctimer-web/`). If you override `base`, ensure it matches your publish path.
 
 ## Manual test checklist
 - Parse 2 host share links and confirm both hosts appear.
