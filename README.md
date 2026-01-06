@@ -1,6 +1,6 @@
 # SyncTimer QR Generator
 
-Single-page generator for SyncTimer join links and QR codes. Built with Vite + React + TypeScript + Framer Motion
+Single-page generator for SyncTimer join links and QR codes. Built with Vite + React + TypeScript + Framer Motion.
 
 ## Features
 - Paste Host Share Link(s) to build a host list; de-dupes by UUID.
