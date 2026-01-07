@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Page from '../components/Page';
 import { buildJoinUrl } from '../features/qr/buildJoinUrl';
-import { downloadPng, downloadSvg, generateSvgMarkup } from '../features/qr/qr';
+import { BrandingCorner, BrandingOptions, downloadPng, downloadSvg, generateSvgMarkup } from '../features/qr/qr';
 import {
   GeneratorConfig,
   HostEntry,
@@ -50,6 +50,13 @@ export default function QrTool() {
   const [validation, setValidation] = useState<ValidationResult>(validateConfig(config));
   const [transportHintNote, setTransportHintNote] = useState<string | null>(null);
   const [copyMessage, setCopyMessage] = useState('');
+  const [branding, setBranding] = useState<BrandingOptions>({
+    enabled: true,
+    corner: 'bottom-right',
+    sizePct: 0.13,
+    patchPaddingPct: 0.12,
+    printSafe: false,
+  });
 
   const joinUrl = useMemo(() => buildJoinUrl(config), [config]);
   const deviceNames = useMemo(() => normalizeDeviceNames(config.hosts), [config.hosts]);
@@ -71,7 +78,7 @@ export default function QrTool() {
   useEffect(() => {
     async function buildSvg() {
       try {
-        const svg = await generateSvgMarkup(joinUrl, 320);
+        const svg = await generateSvgMarkup(joinUrl, 320, branding);
         setSvgMarkup(svg);
       } catch (err) {
         console.error('Failed to generate QR', err);
@@ -82,7 +89,7 @@ export default function QrTool() {
     } else {
       setSvgMarkup('');
     }
-  }, [joinUrl, validation.valid]);
+  }, [joinUrl, validation.valid, branding]);
 
   const addHosts = (newHosts: HostEntry[]) => {
     if (!newHosts.length) return;
@@ -176,6 +183,19 @@ export default function QrTool() {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleBrandingCorner = (corner: BrandingCorner) => {
+    setBranding((prev) => ({ ...prev, corner }));
+  };
+
+  const handleBrandingSize = (value: number) => {
+    const clamped = clampPct(value, 0.1, 0.16);
+    setBranding((prev) => ({ ...prev, sizePct: clamped, printSafe: false }));
+  };
+
+  const handlePrintSafePreset = () => {
+    setBranding((prev) => ({ ...prev, enabled: true, sizePct: 0.11, printSafe: true }));
   };
 
   return (
@@ -319,6 +339,56 @@ export default function QrTool() {
             {transportHintNote && <div className="note">{transportHintNote}</div>}
             {copyMessage && <div className="note success">{copyMessage}</div>}
           </Step>
+
+          <Step title="Branding">
+            <div className="field toggle">
+              <label htmlFor="branding-toggle">Add SyncTimer logo</label>
+              <input
+                id="branding-toggle"
+                type="checkbox"
+                checked={branding.enabled}
+                onChange={(e) => setBranding((prev) => ({ ...prev, enabled: e.target.checked }))}
+              />
+            </div>
+            <div className="field">
+              <label>Corner</label>
+              <div className="segmented">
+                {[
+                  { label: 'TL', value: 'top-left' },
+                  { label: 'TR', value: 'top-right' },
+                  { label: 'BL', value: 'bottom-left' },
+                  { label: 'BR', value: 'bottom-right' },
+                ].map((item) => (
+                  <button
+                    key={item.value}
+                    className={branding.corner === item.value ? 'active' : ''}
+                    onClick={() => handleBrandingCorner(item.value as BrandingCorner)}
+                    disabled={!branding.enabled}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="field">
+              <label>Logo size ({Math.round(branding.sizePct * 100)}%)</label>
+              <input
+                type="range"
+                min={10}
+                max={16}
+                step={1}
+                value={Math.round(branding.sizePct * 100)}
+                onChange={(e) => handleBrandingSize(Number(e.target.value) / 100)}
+                disabled={!branding.enabled}
+              />
+              <small>Range: 10–16% of QR size.</small>
+            </div>
+            <div className="row">
+              <button onClick={handlePrintSafePreset} disabled={!branding.enabled}>
+                Print-safe preset
+              </button>
+            </div>
+          </Step>
         </section>
 
         <section className="right">
@@ -333,7 +403,7 @@ export default function QrTool() {
               <button onClick={() => downloadSvg('synctimer-qr.svg', svgMarkup)} disabled={!validation.valid || !svgMarkup}>
                 Export SVG
               </button>
-              <button onClick={() => downloadPng(joinUrl, 'synctimer-qr.png')} disabled={!validation.valid}>
+              <button onClick={() => downloadPng(joinUrl, 'synctimer-qr.png', 1024, branding)} disabled={!validation.valid}>
                 Export PNG
               </button>
             </div>
@@ -342,7 +412,7 @@ export default function QrTool() {
           <div className="preview">
             <div className="preview-header">
               <h3>QR preview</h3>
-              <span className="pill">Quiet zone: 4 modules</span>
+              <span className="pill">{branding.enabled ? 'Quiet zone: boosted for logo' : 'Quiet zone: 4 modules'}</span>
             </div>
             {validation.valid ? (
               <div className="qr" dangerouslySetInnerHTML={{ __html: svgMarkup }} />
@@ -493,4 +563,8 @@ function Summary({ checklist, errors }: { checklist: ValidationResult['checklist
       )}
     </div>
   );
+}
+
+function clampPct(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
 }
