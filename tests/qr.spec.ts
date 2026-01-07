@@ -18,3 +18,11 @@ test('qr tool builds join url and exports svg', async ({ page }) => {
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toBe('synctimer-qr.svg');
 });
+
+test('home header renders and qr link navigates', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('.site-header')).toBeVisible();
+
+  await page.getByRole('link', { name: 'Generate Join QR' }).click();
+  await expect(page).toHaveURL(/\/qr/);
+});
