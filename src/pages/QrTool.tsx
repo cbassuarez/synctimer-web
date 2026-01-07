@@ -56,7 +56,10 @@ export default function QrTool() {
     sizePct: 0.13,
     patchPaddingPct: 0.12,
     printSafe: false,
+<<<<<<< HEAD
     logoUrl: '/brand/synctimer-logo.png',
+=======
+>>>>>>> main
   });
 
   const joinUrl = useMemo(() => buildJoinUrl(config), [config]);
@@ -591,6 +594,7 @@ function Summary({ checklist, errors }: { checklist: ValidationResult['checklist
 function clampPct(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
+<<<<<<< HEAD
 
 const LOGO_FALLBACK_DATA_URL =
   'data:image/svg+xml;utf8,' +
@@ -601,3 +605,5 @@ const LOGO_FALLBACK_DATA_URL =
       '<circle cx="44" cy="39" r="6" fill="#FFFFFF"/>' +
     '</svg>',
   );
+=======
+>>>>>>> main

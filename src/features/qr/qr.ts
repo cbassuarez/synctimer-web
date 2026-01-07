@@ -13,7 +13,10 @@ export interface BrandingOptions {
   sizePct: number;
   patchPaddingPct: number;
   printSafe?: boolean;
+<<<<<<< HEAD
   logoUrl?: string;
+=======
+>>>>>>> main
 }
 
 export async function generateSvgMarkup(text: string, width = 320, branding?: BrandingOptions): Promise<string> {
@@ -29,11 +32,18 @@ export async function generateSvgMarkup(text: string, width = 320, branding?: Br
   if (!branding?.enabled) return svgMarkup;
   const layout = resolveBrandingLayout(width, modules, margin, branding);
   if (!layout) return svgMarkup;
+<<<<<<< HEAD
   const logoUrl = branding.logoUrl || LOGO_URL;
   const overlay = [
     '<g class="qr-branding" pointer-events="none">',
     `<rect x="${layout.patchX}" y="${layout.patchY}" width="${layout.patchSize}" height="${layout.patchSize}" rx="${layout.patchRadius}" ry="${layout.patchRadius}" fill="#FFFFFF" stroke="#D7DFEA" stroke-width="${layout.patchStroke}" />`,
     `<image href="${logoUrl}" x="${layout.logoX}" y="${layout.logoY}" width="${layout.logoSize}" height="${layout.logoSize}" preserveAspectRatio="xMidYMid meet" />`,
+=======
+  const overlay = [
+    '<g class="qr-branding" pointer-events="none">',
+    `<rect x="${layout.patchX}" y="${layout.patchY}" width="${layout.patchSize}" height="${layout.patchSize}" rx="${layout.patchRadius}" ry="${layout.patchRadius}" fill="#FFFFFF" stroke="#D7DFEA" stroke-width="${layout.patchStroke}" />`,
+    `<image href="${LOGO_URL}" x="${layout.logoX}" y="${layout.logoY}" width="${layout.logoSize}" height="${layout.logoSize}" preserveAspectRatio="xMidYMid meet" />`,
+>>>>>>> main
     '</g>',
   ].join('');
   return svgMarkup.replace('</svg>', `${overlay}</svg>`);
@@ -125,7 +135,11 @@ async function drawBrandingOverlay(
   if (!ctx) return;
   const layout = resolveBrandingLayout(canvas.width, modules, margin, branding);
   if (!layout) return;
+<<<<<<< HEAD
   const logo = await loadImage(branding.logoUrl || LOGO_URL);
+=======
+  const logo = await loadImage(LOGO_URL);
+>>>>>>> main
   if (!logo) return;
   ctx.save();
   drawRoundedRect(ctx, layout.patchX, layout.patchY, layout.patchSize, layout.patchSize, layout.patchRadius);
