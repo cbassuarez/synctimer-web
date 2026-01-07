@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import Page from '../components/Page';
 import HeroField from '../components/HeroField';
 import MediaFrame from '../components/MediaFrame';
+import DeviceMock3D from '../components/DeviceMock3D';
 
 const APP_STORE_URL =
   'https://apps.apple.com/us/app/synctimer-ensemble-stopwatch/id6747689247?itscg=30200&itsct=apps_box_badge&mttnsubad=6747689247';
@@ -60,6 +61,9 @@ export default function Home() {
   const reduced = useReducedMotion();
   const location = useLocation();
   const [heroVideoFailed, setHeroVideoFailed] = useState(false);
+  const [setForgetFailed, setSetForgetFailed] = useState(false);
+  const [countdownFailed, setCountdownFailed] = useState(false);
+  const [cueSheetsFailed, setCueSheetsFailed] = useState(false);
 
   const heroMotion = reduced
     ? {}
@@ -99,26 +103,31 @@ export default function Home() {
                   style={{ width: '246px', height: '82px', verticalAlign: 'middle', objectFit: 'contain' }}
                 />
               </a>
-              <Link className="text-link" to="/#get">
-                Get
-              </Link>
-              <Link className="text-link" to="/qr">
-                Generate Join QR
-              </Link>
+              <div className="hero-cta-buttons">
+                <Link className="button primary" to="/#get">
+                  Get
+                </Link>
+                <Link className="button secondary" to="/qr">
+                  Generate Join QR
+                </Link>
+              </div>
             </div>
           </motion.div>
           <div className="hero-media">
-            {heroVideoFailed ? (
-              <div className="media-frame placeholder hero-placeholder">
-                <span>Add stage-devices-hero.mp4 to /public/media/</span>
-              </div>
-            ) : (
-              <div className="hero-video">
-                <video autoPlay muted loop playsInline preload="metadata" onError={() => setHeroVideoFailed(true)}>
-                  <source src="/media/stage-devices-hero.mp4" type="video/mp4" />
-                </video>
-              </div>
-            )}
+            <DeviceMock3D
+              variant="landscape"
+              size="lg"
+              tilt={{ x: -9, y: 16 }}
+              offset={{ x: 24, y: 10, z: 22 }}
+              fallbackLabel="Add stage-devices-hero.mp4 to /public/media/"
+              media={
+                heroVideoFailed ? undefined : (
+                  <video autoPlay muted loop playsInline preload="metadata" onError={() => setHeroVideoFailed(true)}>
+                    <source src="/media/stage-devices-hero.mp4" type="video/mp4" />
+                  </video>
+                )
+              }
+            />
           </div>
         </div>
       </section>
@@ -161,7 +170,23 @@ export default function Home() {
             </p>
           </div>
           <div>
-            <MediaFrame src="/media/setandforget.png" label="setandforget.png" />
+            <DeviceMock3D
+              variant="portrait"
+              size="sm"
+              tilt={{ x: -8, y: 14 }}
+              offset={{ x: 18, y: 10, z: 20 }}
+              fallbackLabel="setandforget.png"
+              media={
+                setForgetFailed ? undefined : (
+                  <img
+                    src="/media/setandforget.png"
+                    alt="Set & Forget"
+                    loading="lazy"
+                    onError={() => setSetForgetFailed(true)}
+                  />
+                )
+              }
+            />
           </div>
         </div>
       </section>
@@ -177,7 +202,23 @@ export default function Home() {
             </p>
           </div>
           <div>
-            <MediaFrame src="/media/countdownfirst.png" label="countdownfirst.png" />
+            <DeviceMock3D
+              variant="portrait"
+              size="sm"
+              tilt={{ x: -10, y: 18 }}
+              offset={{ x: 16, y: 12, z: 22 }}
+              fallbackLabel="countdownfirst.png"
+              media={
+                countdownFailed ? undefined : (
+                  <img
+                    src="/media/countdownfirst.png"
+                    alt="Countdown First"
+                    loading="lazy"
+                    onError={() => setCountdownFailed(true)}
+                  />
+                )
+              }
+            />
           </div>
         </div>
       </section>
@@ -194,7 +235,23 @@ export default function Home() {
             </ul>
           </div>
           <div>
-            <MediaFrame src="/media/cuesheets.png" label="cuesheets.png" />
+            <DeviceMock3D
+              variant="portrait"
+              size="sm"
+              tilt={{ x: -7, y: 12 }}
+              offset={{ x: 14, y: 8, z: 18 }}
+              fallbackLabel="cuesheets.png"
+              media={
+                cueSheetsFailed ? undefined : (
+                  <img
+                    src="/media/cuesheets.png"
+                    alt="Cue Sheets"
+                    loading="lazy"
+                    onError={() => setCueSheetsFailed(true)}
+                  />
+                )
+              }
+            />
           </div>
         </div>
       </section>
@@ -253,25 +310,25 @@ export default function Home() {
         <div className="get-grid">
           <div className="get-card">
             <h3>Stable</h3>
-            <ul>
-              <li>
-                <a href={APP_STORE_URL}>Get on the App Store (iOS/iPadOS)</a>
-              </li>
-              <li>
-                <a href={MAC_APP_STORE_URL}>Get on the App Store (macOS)</a>
-              </li>
-            </ul>
+            <div className="get-buttons">
+              <a className="button primary" href={APP_STORE_URL}>
+                App Store (iOS/iPadOS)
+              </a>
+              <a className="button secondary" href={MAC_APP_STORE_URL}>
+                App Store (macOS)
+              </a>
+            </div>
           </div>
           <div className="get-card">
             <h3>Nightly</h3>
-            <ul>
-              <li>
-                <a href={IOS_TESTFLIGHT_URL}>Get on TestFlight (iOS/iPadOS)</a>
-              </li>
-              <li>
-                <a href={MAC_TESTFLIGHT_URL}>Get on TestFlight (macOS)</a>
-              </li>
-            </ul>
+            <div className="get-buttons">
+              <a className="button secondary" href={IOS_TESTFLIGHT_URL}>
+                TestFlight (iOS/iPadOS)
+              </a>
+              <a className="button tertiary" href={MAC_TESTFLIGHT_URL}>
+                TestFlight (macOS)
+              </a>
+            </div>
           </div>
         </div>
         <div className="get-android">
