@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>SyncTimer — Host Link</title>
+    <style>
+      :root { color-scheme: light dark; }
+      body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; margin: 0; padding: 24px; }
+      .card { max-width: 640px; margin: 0 auto; border: 1px solid rgba(127,127,127,.25); border-radius: 16px; padding: 18px; }
+      h1 { font-size: 18px; margin: 0 0 10px; }
+      p { margin: 0 0 14px; opacity: .85; }
+      button { padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(127,127,127,.35); background: transparent; cursor: pointer; }
+      pre { margin: 12px 0 0; padding: 12px; border-radius: 12px; background: rgba(127,127,127,.12); overflow: auto; }
+    </style>
+  </head>
+  <body>
+    <div class="card" id="root">
+      <h1>Opening QR Tool…</h1>
+      <p>If you are not redirected, your host link may be invalid.</p>
+    </div>
+
+    <script>
+      (function () {
+        const root = document.getElementById("root");
+        const params = new URLSearchParams(window.location.search);
+
+        const v = params.get("v");
+        const host_uuid = params.get("host_uuid");
+        const device_name = params.get("device_name") || "Host";
+
+        const uuidOk = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(host_uuid || "");
+
+        if (v !== "1" || !uuidOk) {
+          root.innerHTML = `
+            <h1>Invalid host link.</h1>
+            <p>This link is missing required parameters or the UUID is invalid.</p>
+            <button id="openQr">Open QR Tool</button>
+            <pre>${escapeHtml(window.location.search || "(no query params)")}</pre>
+          `;
+          document.getElementById("openQr").addEventListener("click", () => {
+            window.location.href = "/qr";
+          });
+          return;
+        }
+
+        // Canonical Host Share Link (must match parser expectations: synctimerapp.com/host)
+        const canonical =
+          "https://synctimerapp.com/host" +
+          "?v=1" +
+          "&host_uuid=" + encodeURIComponent(host_uuid) +
+          "&device_name=" + encodeURIComponent(device_name);
+
+        // Redirect to /qr with a single prefill param
+        const dest = "/qr?prefill=" + encodeURIComponent(canonical);
+
+        // Prevent back-button traps
+        window.location.replace(dest);
+
+        function escapeHtml(s) {
+          return String(s)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+        }
+      })();
+    </script>
+  </body>
+</html>
