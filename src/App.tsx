@@ -13,6 +13,8 @@ import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Press from './pages/Press';
 import QrTool from './pages/QrTool';
+import Community from './pages/Community';
+import CommunitySubpage from './pages/CommunitySubpage';
 
 const pageTransition = {
   initial: { opacity: 0, y: 16 },
@@ -88,6 +90,22 @@ export default function App() {
             element={
               <PageTransition>
                 <Support />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/community"
+            element={
+              <PageTransition>
+                <Community />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/community/:slug"
+            element={
+              <PageTransition>
+                <CommunitySubpage />
               </PageTransition>
             }
           />

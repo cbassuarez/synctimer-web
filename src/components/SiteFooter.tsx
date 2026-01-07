@@ -5,10 +5,8 @@ export default function SiteFooter() {
     <footer className="site-footer">
       <div className="footer-inner">
         <div className="footer-block">
-          <span className="footer-title">Stage Devices</span>
-          <p>Timing, cueing, and rehearsal systems for modern ensembles.</p>
           <a className="footer-link" href="https://stagedevices.com" target="_blank" rel="noreferrer">
-            Stage Devices family →
+            Stage Devices →
           </a>
         </div>
         <div className="footer-links">
