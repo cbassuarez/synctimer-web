@@ -1,0 +1,47 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SyncTimer — Join</title>
+  <meta name="robots" content="noindex" />
+  <style>
+    html,body{height:100%;margin:0;font-family:-apple-system,BlinkMacSystemFont,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{max-width:520px;width:100%;border:1px solid rgba(0,0,0,.12);border-radius:16px;padding:20px;line-height:1.35}
+    .muted{opacity:.75}
+    a{word-break:break-all}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div><strong>Opening SyncTimer…</strong></div>
+      <div class="muted" style="margin-top:8px">
+        If nothing happens, tap the link below.
+      </div>
+      <div style="margin-top:12px">
+        <a id="fallback" href="#">Open App Clip</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      // IMPORTANT: keep this exactly aligned with the Default App Clip Link in App Store Connect.
+      var APPCLIP_BASE = "https://appclip.apple.com/id?p=com.StageDevices.SyncTimer.Clip";
+
+      var qs = window.location.search;
+      var target = APPCLIP_BASE + (qs && qs.length > 1 ? ("&" + qs.slice(1)) : "");
+
+      var a = document.getElementById("fallback");
+      if (a) a.href = target;
+
+      // Avoid back-button loops
+      window.location.replace(target);
+    })();
+  </script>
+
+</body>
+</html>
