@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SyncTimer QR Tool</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      fetch('/index.html', { cache: 'reload' })
+        .then((response) => response.text())
+        .then((html) => {
+          document.open();
+          document.write(html);
+          document.close();
+        });
+    </script>
+  </body>
+</html>
