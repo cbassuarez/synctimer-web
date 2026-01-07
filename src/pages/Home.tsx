@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import Page from '../components/Page';
 import HeroField from '../components/HeroField';
 import MediaFrame from '../components/MediaFrame';
-import DeviceMock3D from '../components/DeviceMock3D';
+import TiltedMedia from '../components/TiltedMedia';
 
 const APP_STORE_URL =
   'https://apps.apple.com/us/app/synctimer-ensemble-stopwatch/id6747689247?itscg=30200&itsct=apps_box_badge&mttnsubad=6747689247';
@@ -60,10 +60,6 @@ const faqs = [
 export default function Home() {
   const reduced = useReducedMotion();
   const location = useLocation();
-  const [heroVideoFailed, setHeroVideoFailed] = useState(false);
-  const [setForgetFailed, setSetForgetFailed] = useState(false);
-  const [countdownFailed, setCountdownFailed] = useState(false);
-  const [cueSheetsFailed, setCueSheetsFailed] = useState(false);
 
   const heroMotion = reduced
     ? {}
@@ -88,6 +84,14 @@ export default function Home() {
         <HeroField />
         <div className="hero-timecode" aria-hidden="true" />
         <div className="hero-inner">
+          <div className="hero-media">
+            <TiltedMedia
+              variant="hero"
+              type="video"
+              src="/media/stage-devices-hero.mp4"
+              missingLabel="Add stage-devices-hero.mp4 to /public/media/"
+            />
+          </div>
           <motion.div className="hero-copy" {...heroMotion}>
             <h1>The stopwatch that finally nails ensemble sync.</h1>
             <p className="hero-lead">
@@ -113,22 +117,6 @@ export default function Home() {
               </div>
             </div>
           </motion.div>
-          <div className="hero-media">
-            <DeviceMock3D
-              variant="landscape"
-              size="lg"
-              tilt={{ x: -9, y: 16 }}
-              offset={{ x: 24, y: 10, z: 22 }}
-              fallbackLabel="Add stage-devices-hero.mp4 to /public/media/"
-              media={
-                heroVideoFailed ? undefined : (
-                  <video autoPlay muted loop playsInline preload="metadata" onError={() => setHeroVideoFailed(true)}>
-                    <source src="/media/stage-devices-hero.mp4" type="video/mp4" />
-                  </video>
-                )
-              }
-            />
-          </div>
         </div>
       </section>
 
@@ -169,23 +157,13 @@ export default function Home() {
               the timer.
             </p>
           </div>
-          <div>
-            <DeviceMock3D
-              variant="portrait"
-              size="sm"
-              tilt={{ x: -8, y: 14 }}
-              offset={{ x: 18, y: 10, z: 20 }}
-              fallbackLabel="setandforget.png"
-              media={
-                setForgetFailed ? undefined : (
-                  <img
-                    src="/media/setandforget.png"
-                    alt="Set & Forget"
-                    loading="lazy"
-                    onError={() => setSetForgetFailed(true)}
-                  />
-                )
-              }
+          <div className="section-media">
+            <TiltedMedia
+              variant="section"
+              type="image"
+              src="/media/setandforget.png"
+              alt="Set &amp; Forget"
+              missingLabel="Missing: setandforget.png"
             />
           </div>
         </div>
@@ -201,23 +179,13 @@ export default function Home() {
               device follows.
             </p>
           </div>
-          <div>
-            <DeviceMock3D
-              variant="portrait"
-              size="sm"
-              tilt={{ x: -10, y: 18 }}
-              offset={{ x: 16, y: 12, z: 22 }}
-              fallbackLabel="countdownfirst.png"
-              media={
-                countdownFailed ? undefined : (
-                  <img
-                    src="/media/countdownfirst.png"
-                    alt="Countdown First"
-                    loading="lazy"
-                    onError={() => setCountdownFailed(true)}
-                  />
-                )
-              }
+          <div className="section-media">
+            <TiltedMedia
+              variant="section"
+              type="image"
+              src="/media/countdownfirst.png"
+              alt="Countdown First"
+              missingLabel="Missing: countdownfirst.png"
             />
           </div>
         </div>
@@ -234,23 +202,13 @@ export default function Home() {
               <li>Editor/preview notes keep rehearsals clear before you push live.</li>
             </ul>
           </div>
-          <div>
-            <DeviceMock3D
-              variant="portrait"
-              size="sm"
-              tilt={{ x: -7, y: 12 }}
-              offset={{ x: 14, y: 8, z: 18 }}
-              fallbackLabel="cuesheets.png"
-              media={
-                cueSheetsFailed ? undefined : (
-                  <img
-                    src="/media/cuesheets.png"
-                    alt="Cue Sheets"
-                    loading="lazy"
-                    onError={() => setCueSheetsFailed(true)}
-                  />
-                )
-              }
+          <div className="section-media">
+            <TiltedMedia
+              variant="section"
+              type="image"
+              src="/media/cuesheets.png"
+              alt="Cue Sheets"
+              missingLabel="Missing: cuesheets.png"
             />
           </div>
         </div>
