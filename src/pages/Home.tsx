@@ -5,6 +5,7 @@ import Page from '../components/Page';
 import HeroField from '../components/HeroField';
 import MediaFrame from '../components/MediaFrame';
 import TiltedMedia from '../components/TiltedMedia';
+import { useTheme } from '../theme/useTheme';
 
 const APP_STORE_URL =
   'https://apps.apple.com/us/app/synctimer-ensemble-stopwatch/id6747689247?itscg=30200&itsct=apps_box_badge&mttnsubad=6747689247';
@@ -12,6 +13,10 @@ const MAC_APP_STORE_URL = 'MAC_APP_STORE_URL';
 const IOS_TESTFLIGHT_URL = 'IOS_TESTFLIGHT_URL';
 const MAC_TESTFLIGHT_URL = 'MAC_TESTFLIGHT_URL';
 const ANDROID_BUILD_URL = 'https://github.com/synctimer/android';
+const STABLE_IOS_VERSION = 'v0.9';
+const STABLE_MACOS_VERSION = 'v0.9';
+const NIGHTLY_IOS_VERSION = 'nightly';
+const NIGHTLY_MACOS_VERSION = 'nightly';
 
 const storyboard = [
   {
@@ -60,6 +65,8 @@ const faqs = [
 export default function Home() {
   const reduced = useReducedMotion();
   const location = useLocation();
+  const { theme } = useTheme();
+  const showJoinSection = false;
 
   const heroMotion = reduced
     ? {}
@@ -100,13 +107,26 @@ export default function Home() {
             </p>
             <p className="hero-tagline">Instant, reliable, precise.</p>
             <div className="hero-actions">
-              <a href={APP_STORE_URL} style={{ display: 'inline-block' }}>
-                <img
-                  src="https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us?releaseDate=1759190400"
-                  alt="Download on the App Store"
-                  style={{ width: '246px', height: '82px', verticalAlign: 'middle', objectFit: 'contain' }}
-                />
-              </a>
+              {theme === 'dark' ? (
+                <a
+                  href="https://apps.apple.com/us/app/synctimer-ensemble-stopwatch/id6747689247?itscg=30200&itsct=apps_box_badge&mttnsubad=6747689247"
+                  style={{ display: 'inline-block' }}
+                >
+                  <img
+                    src="https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/white/en-us?releaseDate=1759190400"
+                    alt="Download on the App Store"
+                    style={{ width: '246px', height: '82px', verticalAlign: 'middle', objectFit: 'contain' }}
+                  />
+                </a>
+              ) : (
+                <a href={APP_STORE_URL} style={{ display: 'inline-block' }}>
+                  <img
+                    src="https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us?releaseDate=1759190400"
+                    alt="Download on the App Store"
+                    style={{ width: '246px', height: '82px', verticalAlign: 'middle', objectFit: 'contain' }}
+                  />
+                </a>
+              )}
               <div className="hero-cta-buttons">
                 <Link className="button primary" to="/#get">
                   Get
@@ -120,31 +140,33 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="home-section" id="join">
-        <div className="section-heading">
-          <p className="section-eyebrow">Join</p>
-          <h2>Join in one scan</h2>
-          <p className="section-desc">One QR gets every device into the right room, instantly.</p>
-        </div>
-        <div className="storyboard">
-          {storyboard.map((frame, index) => (
-            <div className="storyboard-card" key={frame.title}>
-              <div className="storyboard-label">0{index + 1}</div>
-              <MediaFrame src={frame.src} label={frame.label} className="storyboard-media" />
-              <h3>{frame.title}</h3>
-              <p>{frame.description}</p>
-            </div>
-          ))}
-        </div>
-        <details className="detail">
-          <summary>What the QR encodes</summary>
-          <ul>
-            <li>Which mode to join (Wi-Fi or Nearby) so devices connect correctly.</li>
-            <li>Which hosts are allowed, plus a room/device label to avoid mix-ups.</li>
-            <li>Minimum build or version requirements so incompatible installs never join.</li>
-          </ul>
-        </details>
-      </section>
+      {showJoinSection && (
+        <section className="home-section" id="join">
+          <div className="section-heading">
+            <p className="section-eyebrow">Join</p>
+            <h2>Join in one scan</h2>
+            <p className="section-desc">One QR gets every device into the right room, instantly.</p>
+          </div>
+          <div className="storyboard">
+            {storyboard.map((frame, index) => (
+              <div className="storyboard-card" key={frame.title}>
+                <div className="storyboard-label">0{index + 1}</div>
+                <MediaFrame src={frame.src} label={frame.label} className="storyboard-media" />
+                <h3>{frame.title}</h3>
+                <p>{frame.description}</p>
+              </div>
+            ))}
+          </div>
+          <details className="detail">
+            <summary>What the QR encodes</summary>
+            <ul>
+              <li>Which mode to join (Wi-Fi or Nearby) so devices connect correctly.</li>
+              <li>Which hosts are allowed, plus a room/device label to avoid mix-ups.</li>
+              <li>Minimum build or version requirements so incompatible installs never join.</li>
+            </ul>
+          </details>
+        </section>
+      )}
 
       <section className="home-section" id="set-forget">
         <div className="section-grid">
@@ -158,12 +180,11 @@ export default function Home() {
             </p>
           </div>
           <div className="section-media">
-            <TiltedMedia
-              variant="section"
-              type="image"
+            <MediaFrame
               src="/media/setandforget.png"
               alt="Set &amp; Forget"
-              missingLabel="Missing: setandforget.png"
+              label="Missing: setandforget.png"
+              className="flat-media"
             />
           </div>
         </div>
@@ -180,12 +201,11 @@ export default function Home() {
             </p>
           </div>
           <div className="section-media">
-            <TiltedMedia
-              variant="section"
-              type="image"
+            <MediaFrame
               src="/media/countdownfirst.png"
               alt="Countdown First"
-              missingLabel="Missing: countdownfirst.png"
+              label="Missing: countdownfirst.png"
+              className="flat-media"
             />
           </div>
         </div>
@@ -203,12 +223,11 @@ export default function Home() {
             </ul>
           </div>
           <div className="section-media">
-            <TiltedMedia
-              variant="section"
-              type="image"
+            <MediaFrame
               src="/media/cuesheets.png"
               alt="Cue Sheets"
-              missingLabel="Missing: cuesheets.png"
+              label="Missing: cuesheets.png"
+              className="flat-media"
             />
           </div>
         </div>
@@ -270,10 +289,14 @@ export default function Home() {
             <h3>Stable</h3>
             <div className="get-buttons">
               <a className="button primary" href={APP_STORE_URL}>
-                App Store (iOS/iPadOS)
+                <span>App Store (iOS)</span>
+                <span className="version-sep">|</span>
+                <span className="version-tag">{STABLE_IOS_VERSION}</span>
               </a>
               <a className="button secondary" href={MAC_APP_STORE_URL}>
-                App Store (macOS)
+                <span>App Store (macOS)</span>
+                <span className="version-sep">|</span>
+                <span className="version-tag">{STABLE_MACOS_VERSION}</span>
               </a>
             </div>
           </div>
@@ -281,10 +304,14 @@ export default function Home() {
             <h3>Nightly</h3>
             <div className="get-buttons">
               <a className="button secondary" href={IOS_TESTFLIGHT_URL}>
-                TestFlight (iOS/iPadOS)
+                <span>TestFlight (iOS)</span>
+                <span className="version-sep">|</span>
+                <span className="version-tag">{NIGHTLY_IOS_VERSION}</span>
               </a>
               <a className="button tertiary" href={MAC_TESTFLIGHT_URL}>
-                TestFlight (macOS)
+                <span>TestFlight (macOS)</span>
+                <span className="version-sep">|</span>
+                <span className="version-tag">{NIGHTLY_MACOS_VERSION}</span>
               </a>
             </div>
           </div>
