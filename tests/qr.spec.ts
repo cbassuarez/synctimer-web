@@ -6,7 +6,7 @@ test('qr tool builds join url and exports svg', async ({ page }) => {
     'https://synctimerapp.com/host?v=1&host_uuid=123e4567-e89b-12d3-a456-426614174000&device_name=Main',
   );
 
-  await expect(page.getByText('Ready')).toBeVisible();
+  await expect(page.locator('.qr-summary__chip.is-ready')).toBeVisible();
 
   const joinUrl = page.getByTestId('qr-join-url');
   await expect(joinUrl).toContainText('https://synctimerapp.com/join?');
