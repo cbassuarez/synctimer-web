@@ -12,7 +12,7 @@ test('qr tool builds join url and exports svg', async ({ page }) => {
   await expect(joinUrl).toContainText('https://synctimerapp.com/join?');
   await expect(joinUrl).toContainText('/join?');
 
-  await expect(page.locator('.qr-output__preview .qr svg')).toBeVisible();
+  await expect(page.locator('aside.qr-output .qr-output__preview .qr svg')).toBeVisible();
 
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Download SVG' }).click();
