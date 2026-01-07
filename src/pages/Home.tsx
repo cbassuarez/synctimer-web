@@ -5,6 +5,13 @@ import Page from '../components/Page';
 import HeroField from '../components/HeroField';
 import MediaFrame from '../components/MediaFrame';
 
+const APP_STORE_URL =
+  'https://apps.apple.com/us/app/synctimer-ensemble-stopwatch/id6747689247?itscg=30200&itsct=apps_box_badge&mttnsubad=6747689247';
+const MAC_APP_STORE_URL = 'MAC_APP_STORE_URL';
+const IOS_TESTFLIGHT_URL = 'IOS_TESTFLIGHT_URL';
+const MAC_TESTFLIGHT_URL = 'MAC_TESTFLIGHT_URL';
+const ANDROID_BUILD_URL = 'https://github.com/synctimer/android';
+
 const storyboard = [
   {
     title: 'QR on stand',
@@ -78,48 +85,38 @@ export default function Home() {
         <div className="hero-timecode" aria-hidden="true" />
         <div className="hero-inner">
           <motion.div className="hero-copy" {...heroMotion}>
-            <p className="hero-eyebrow">SyncTimer Ensemble</p>
-            <h1>Lock every iPhone in the room to ±5 ms.</h1>
-            <p className="hero-lead">Parent runs the clock. Everyone follows. Join by QR in seconds.</p>
+            <h1>The stopwatch that finally nails ensemble sync.</h1>
+            <p className="hero-lead">
+              SyncTimer allows you to sync stopwatches on demand with powerful tools for performers, theaters, or
+              anyone who wants to sync offstage.
+            </p>
+            <p className="hero-tagline">Instant, reliable, precise.</p>
             <div className="hero-actions">
-              <Link className="button primary" to="/#get">
-                Get SyncTimer
+              <a href={APP_STORE_URL} style={{ display: 'inline-block' }}>
+                <img
+                  src="https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us?releaseDate=1759190400"
+                  alt="Download on the App Store"
+                  style={{ width: '246px', height: '82px', verticalAlign: 'middle', objectFit: 'contain' }}
+                />
+              </a>
+              <Link className="text-link" to="/#get">
+                Get
               </Link>
-              <Link className="button secondary" to="/qr">
+              <Link className="text-link" to="/qr">
                 Generate Join QR
               </Link>
-              <Link className="button tertiary" to="/#join">
-                How Join Works
-              </Link>
-            </div>
-            <div className="hero-metrics">
-              <span>±5 ms phase lock</span>
-              <span>30+ devices stress-tested</span>
             </div>
           </motion.div>
           <div className="hero-media">
-            {!heroVideoFailed ? (
-              <div className="hero-video">
-                {/* Drop the hero video at public/media/hero-video.mp4 (optional). */}
-                <video
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="metadata"
-                  poster="/media/hero-poster.jpg"
-                  onError={() => setHeroVideoFailed(true)}
-                >
-                  <source src="/media/hero-video.mp4" type="video/mp4" />
-                </video>
-                <div className="media-caption">Composite SyncTimer screens in rehearsal.</div>
+            {heroVideoFailed ? (
+              <div className="media-frame placeholder hero-placeholder">
+                <span>Add stage-devices-hero.mp4 to /public/media/</span>
               </div>
             ) : (
-              <div className="hero-montage">
-                {/* Optional screenshots live in public/media/. */}
-                <MediaFrame src="/media/hero-screen-1.jpg" label="SyncTimer hero screen" />
-                <MediaFrame src="/media/hero-screen-2.jpg" label="SyncTimer sync view" />
-                <MediaFrame src="/media/hero-screen-3.jpg" label="SyncTimer transport view" />
+              <div className="hero-video">
+                <video autoPlay muted loop playsInline preload="metadata" onError={() => setHeroVideoFailed(true)}>
+                  <source src="/media/stage-devices-hero.mp4" type="video/mp4" />
+                </video>
               </div>
             )}
           </div>
@@ -163,23 +160,8 @@ export default function Home() {
               the timer.
             </p>
           </div>
-          <div className="operator-timeline">
-            <div className="timeline-node">
-              <span>Stop</span>
-              <p>Hold the ensemble at a shared zero.</p>
-            </div>
-            <div className="timeline-node">
-              <span>Cue</span>
-              <p>Trigger a unified cue call.</p>
-            </div>
-            <div className="timeline-node">
-              <span>Loop</span>
-              <p>Repeat safely without drift.</p>
-            </div>
-            <div className="timeline-node">
-              <span>End</span>
-              <p>Freeze and archive the run.</p>
-            </div>
+          <div>
+            <MediaFrame src="/media/setandforget.png" label="setandforget.png" />
           </div>
         </div>
       </section>
@@ -194,17 +176,8 @@ export default function Home() {
               device follows.
             </p>
           </div>
-          <div className="countdown-panel">
-            <div className="numpad">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((value) => (
-                <span key={value}>{value}</span>
-              ))}
-              <span className="wide">0</span>
-              <span className="wide">Start</span>
-            </div>
-            <div className="countdown-meta">
-              <p className="muted">Numpad → Countdown → Broadcast</p>
-            </div>
+          <div>
+            <MediaFrame src="/media/countdownfirst.png" label="countdownfirst.png" />
           </div>
         </div>
       </section>
@@ -220,23 +193,8 @@ export default function Home() {
               <li>Editor/preview notes keep rehearsals clear before you push live.</li>
             </ul>
           </div>
-          <div className="cue-sheet-visual">
-            {/* Drop cue sheet screenshots at public/media/cue-sheet-editor.jpg (optional). */}
-            <MediaFrame src="/media/cue-sheet-editor.jpg" label="Cue sheet editor preview" className="cue-sheet-image" />
-            <ol className="cue-callouts">
-              <li>
-                <strong>1</strong>
-                <span>Rehearsal marks and cue ordering.</span>
-              </li>
-              <li>
-                <strong>2</strong>
-                <span>Message + image cues that travel with the score.</span>
-              </li>
-              <li>
-                <strong>3</strong>
-                <span>Preview panel before the run starts.</span>
-              </li>
-            </ol>
+          <div>
+            <MediaFrame src="/media/cuesheets.png" label="cuesheets.png" />
           </div>
         </div>
       </section>
@@ -272,27 +230,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="home-section" id="scale">
-        <div className="section-grid">
-          <div>
-            <p className="section-eyebrow">Scale</p>
-            <h2>Built for 30+ devices.</h2>
-            <p className="section-desc">Parent → children → status. Know who is locked before the downbeat.</p>
-          </div>
-          <div className="scale-diagram">
-            <div className="scale-node parent">Parent</div>
-            <div className="scale-children">
-              {Array.from({ length: 8 }).map((_, index) => (
-                <span key={index} className="scale-node">
-                  Child
-                </span>
-              ))}
-            </div>
-            <div className="scale-status">Status: 30+ locked</div>
-          </div>
-        </div>
-      </section>
-
       <section className="home-section" id="faq">
         <div className="section-heading">
           <p className="section-eyebrow">Q&amp;A</p>
@@ -310,23 +247,38 @@ export default function Home() {
       </section>
 
       <section className="home-section get-section" id="get">
-        <div className="section-grid">
-          <div>
-            <p className="section-eyebrow">Get</p>
-            <h2>Ready for the room?</h2>
-            <p className="section-desc">Install SyncTimer, print a join QR, and lock the room in seconds.</p>
+        <div className="section-heading">
+          <h2>Get SyncTimer</h2>
+        </div>
+        <div className="get-grid">
+          <div className="get-card">
+            <h3>Stable</h3>
+            <ul>
+              <li>
+                <a href={APP_STORE_URL}>Get on the App Store (iOS/iPadOS)</a>
+              </li>
+              <li>
+                <a href={MAC_APP_STORE_URL}>Get on the App Store (macOS)</a>
+              </li>
+            </ul>
           </div>
-          <div className="get-actions">
-            <Link className="button primary" to="/app-clip">
-              Open App Clip
-            </Link>
-            <Link className="button secondary" to="/features">
-              Explore Features
-            </Link>
-            <Link className="button tertiary" to="/qr">
-              Build a Join QR
-            </Link>
+          <div className="get-card">
+            <h3>Nightly</h3>
+            <ul>
+              <li>
+                <a href={IOS_TESTFLIGHT_URL}>Get on TestFlight (iOS/iPadOS)</a>
+              </li>
+              <li>
+                <a href={MAC_TESTFLIGHT_URL}>Get on TestFlight (macOS)</a>
+              </li>
+            </ul>
           </div>
+        </div>
+        <div className="get-android">
+          <a className="button secondary" href={ANDROID_BUILD_URL}>
+            Build Android (open source)
+          </a>
+          <p>Android builds are community-driven. Start here.</p>
         </div>
       </section>
     </Page>
