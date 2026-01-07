@@ -2,11 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Page from '../components/Page';
 import { buildJoinUrl } from '../features/qr/buildJoinUrl';
-import { BrandingCorner, BrandingOptions, downloadPng, downloadSvg, generateSvgMarkup } from '../features/qr/qr';
+import { BrandingOptions, downloadPng, downloadSvg, generateSvgMarkup } from '../features/qr/qr';
 import {
   GeneratorConfig,
   HostEntry,
-  Mode,
   ValidationResult,
   defaultConfig,
   normalizeDeviceNames,
@@ -16,6 +15,7 @@ import {
 import { parseAnyInput, parseHostShareLinks, parseJoinLink } from '../features/qr/parse';
 import { copyText } from '../features/qr/ui';
 import { decodeState, encodeState, loadPersistedConfig, persistConfig } from '../features/qr/storage';
+import QrWizardPage, { QrModel } from '../features/qr/wizard/QrWizardPage';
 
 function usePersistentConfig(): [GeneratorConfig, React.Dispatch<React.SetStateAction<GeneratorConfig>>] {
   const [config, setConfig] = useState<GeneratorConfig>(() => {
@@ -40,17 +40,16 @@ function usePersistentConfig(): [GeneratorConfig, React.Dispatch<React.SetStateA
   return [config, setConfig];
 }
 
-export default function QrTool() {
+function useQrModel(): QrModel {
   const [config, setConfig] = usePersistentConfig();
   const [hostInput, setHostInput] = useState('');
   const [manualUuid, setManualUuid] = useState('');
   const [manualDevice, setManualDevice] = useState('');
-  const [showManual, setShowManual] = useState(false);
   const [svgMarkup, setSvgMarkup] = useState('');
   const [validation, setValidation] = useState<ValidationResult>(validateConfig(config));
   const [transportHintNote, setTransportHintNote] = useState<string | null>(null);
   const [copyMessage, setCopyMessage] = useState('');
-  const [branding, setBranding] = useState<BrandingOptions>({
+  const [branding] = useState<BrandingOptions>({
     enabled: true,
     corner: 'bottom-right',
     sizePct: 0.13,
@@ -103,8 +102,10 @@ export default function QrTool() {
     });
   };
 
-  const handleParse = () => {
-    const parsedJoin = parseJoinLink(hostInput.trim());
+  const parseHostInput = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    const parsedJoin = parseJoinLink(trimmed);
     if (parsedJoin) {
       const next: GeneratorConfig = {
         ...config,
@@ -120,19 +121,27 @@ export default function QrTool() {
       }
       return;
     }
-    const { hosts, join } = parseAnyInput(hostInput.trim());
+    const { hosts, join } = parseAnyInput(trimmed);
     if (join && join.config.hosts) {
       setConfig((prev) => ({ ...prev, ...join.config, hosts: join.config.hosts } as GeneratorConfig));
       return;
     }
-    const { errors } = parseHostShareLinks(hostInput.trim());
+    const { errors } = parseHostShareLinks(trimmed);
     if (errors.length) {
       setTransportHintNote(errors.join('\n'));
     } else {
       setTransportHintNote(null);
     }
     addHosts(hosts);
-    setHostInput('');
+  };
+
+  const handleHostInputChange = (value: string) => {
+    setHostInput(value);
+    if (value.trim()) {
+      parseHostInput(value);
+    } else {
+      setTransportHintNote(null);
+    }
   };
 
   const handleManualAdd = () => {
@@ -181,302 +190,84 @@ export default function QrTool() {
     await handleCopy(url);
   };
 
-  const handlePrint = () => {
-    window.print();
+  const handleDisplayMode = () => {
+    setConfig((prev) => ({ ...prev, displayMode: true }));
   };
 
-  const handleBrandingCorner = (corner: BrandingCorner) => {
-    setBranding((prev) => ({ ...prev, corner }));
+  const handlePrintLabel = () => {
+    setConfig((prev) => ({ ...prev, printMode: !prev.printMode }));
   };
 
-  const handleBrandingSize = (value: number) => {
-    const clamped = clampPct(value, 0.1, 0.16);
-    setBranding((prev) => ({ ...prev, sizePct: clamped, printSafe: false }));
+  return {
+    state: {
+      config,
+      hostInput,
+      manualUuid,
+      manualDevice,
+      copyMessage,
+      transportHintNote,
+    },
+    setters: {
+      setConfig,
+      setHostInput: handleHostInputChange,
+      setManualUuid,
+      setManualDevice,
+    },
+    derived: {
+      joinUrl,
+      deviceNames,
+      svgMarkup,
+      validation,
+      branding,
+    },
+    actions: {
+      addHosts,
+      parseHostInput,
+      handleManualAdd,
+      updateHost,
+      removeHost,
+      moveHost,
+      handleCopy,
+      handleCopyGeneratorLink,
+      handleDisplayMode,
+      handlePrintLabel,
+      downloadSvg,
+      downloadPng,
+    },
   };
+}
 
-  const handlePrintSafePreset = () => {
-    setBranding((prev) => ({ ...prev, enabled: true, sizePct: 0.11, printSafe: true }));
-  };
+export default function QrTool() {
+  const qrModel = useQrModel();
+  const [activeStep, setActiveStep] = useState(0);
+  const [showManualHostEditor, setShowManualHostEditor] = useState(false);
 
   return (
     <Page className="qr-page">
-      <header className="page-header">
-        <div>
-          <h1>QR generator</h1>
-          <p>Create reliable join links and QR codes for SyncTimer sessions.</p>
-        </div>
-        <div className="mode-switch">
-          <label>Mode</label>
-          <div className="segmented">
-            {(['wifi', 'nearby'] as Mode[]).map((m) => (
-              <button
-                key={m}
-                className={config.mode === m ? 'active' : ''}
-                onClick={() => setConfig({ ...config, mode: m })}
-              >
-                {m === 'wifi' ? 'Wi-Fi' : 'Nearby'}
-              </button>
-            ))}
-          </div>
-          <small>Wi-Fi mode always uses transport_hint=bonjour.</small>
-        </div>
-      </header>
-
-      <main className="layout">
-        <section className="left">
-          <Step title="Step 1: Session basics">
-            <div className="field">
-              <label>Room label (optional)</label>
-              <input
-                type="text"
-                value={config.roomLabel}
-                onChange={(e) => setConfig({ ...config, roomLabel: e.target.value })}
-                placeholder="Room 12A"
-              />
-            </div>
-          </Step>
-
-          <Step title="Step 2: Hosts">
-            <div className="field">
-              <label htmlFor="host-input">Host Share Link(s) or join link</label>
-              <textarea
-                id="host-input"
-                rows={3}
-                value={hostInput}
-                onChange={(e) => setHostInput(e.target.value)}
-                placeholder="Paste host share links or a join link here"
-              />
-              <button className="primary" onClick={handleParse}>
-                Parse
-              </button>
-              <small>Paste multiple links separated by spaces or newlines. Join links auto-fill everything.</small>
-            </div>
-
-            <HostList
-              hosts={config.hosts}
-              deviceNames={deviceNames}
-              onChange={updateHost}
-              onRemove={removeHost}
-              onMove={moveHost}
-              onCopy={handleCopy}
-            />
-
-            <div className="manual">
-              <button className="link" onClick={() => setShowManual(!showManual)}>
-                {showManual ? 'Hide' : 'Add host manually'}
-              </button>
-              <AnimatePresence>
-                {showManual && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                  >
-                    <div className="manual-grid">
-                      <div className="field">
-                        <label>Host UUID</label>
-                        <input
-                          type="text"
-                          value={manualUuid}
-                          onChange={(e) => setManualUuid(e.target.value)}
-                          placeholder="123e4567-e89b-12d3-a456-426614174000"
-                        />
-                      </div>
-                      <div className="field">
-                        <label>Device name (optional)</label>
-                        <input
-                          type="text"
-                          value={manualDevice}
-                          onChange={(e) => setManualDevice(e.target.value)}
-                          placeholder="iPad Pro"
-                        />
-                      </div>
-                    </div>
-                    <button onClick={handleManualAdd} className="secondary">
-                      Add host
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </Step>
-
-          <Step title="Step 3: Compatibility">
-            <div className="grid">
-              <div className="field">
-                <label>Minimum build</label>
-                <input
-                  type="number"
-                  min={1}
-                  value={config.minBuild || ''}
-                  onChange={(e) => setConfig({ ...config, minBuild: e.target.value })}
-                  placeholder="e.g. 1200"
-                />
-              </div>
-              <div className="field">
-                <label>Minimum version</label>
-                <input
-                  type="text"
-                  value={config.minVersion || ''}
-                  onChange={(e) => setConfig({ ...config, minVersion: e.target.value })}
-                  placeholder="e.g. 1.2.3"
-                />
-              </div>
-            </div>
-          </Step>
-
-          <Step title="Step 4: Output">
-            <Summary checklist={validation.checklist} errors={validation.errors} />
-            <div className="actions">
-              <button onClick={() => setConfig({ ...config, displayMode: true })} disabled={!validation.valid}>
-                Display mode
-              </button>
-              <button onClick={() => setConfig({ ...config, printMode: !config.printMode })}>
-                {config.printMode ? 'Hide print layout' : 'Print mode preview'}
-              </button>
-              <button onClick={handleCopyGeneratorLink}>Copy generator link</button>
-            </div>
-            {transportHintNote && <div className="note">{transportHintNote}</div>}
-            {copyMessage && <div className="note success">{copyMessage}</div>}
-          </Step>
-
-          <Step title="Branding">
-            <div className="field toggle">
-              <label htmlFor="branding-toggle">Add SyncTimer logo</label>
-              <input
-                id="branding-toggle"
-                type="checkbox"
-                checked={branding.enabled}
-                onChange={(e) => setBranding((prev) => ({ ...prev, enabled: e.target.checked }))}
-              />
-            </div>
-            <div className="field">
-              <label>Corner</label>
-              <div className="segmented">
-                {[
-                  { label: 'TL', value: 'top-left' },
-                  { label: 'TR', value: 'top-right' },
-                  { label: 'BL', value: 'bottom-left' },
-                  { label: 'BR', value: 'bottom-right' },
-                ].map((item) => (
-                  <button
-                    key={item.value}
-                    className={branding.corner === item.value ? 'active' : ''}
-                    onClick={() => handleBrandingCorner(item.value as BrandingCorner)}
-                    disabled={!branding.enabled}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="field">
-              <label>Logo size ({Math.round(branding.sizePct * 100)}%)</label>
-              <input
-                type="range"
-                min={10}
-                max={16}
-                step={1}
-                value={Math.round(branding.sizePct * 100)}
-                onChange={(e) => handleBrandingSize(Number(e.target.value) / 100)}
-                disabled={!branding.enabled}
-              />
-              <small>Range: 10–16% of QR size.</small>
-            </div>
-            <div className="row">
-              <button onClick={handlePrintSafePreset} disabled={!branding.enabled}>
-                Print-safe preset
-              </button>
-            </div>
-          </Step>
-        </section>
-
-        <section className="right">
-          <h2>Live output</h2>
-          <div className="field">
-            <label>Join URL</label>
-            <textarea readOnly rows={3} value={joinUrl} />
-            <div className="row">
-              <button onClick={() => handleCopy(joinUrl)} disabled={!validation.valid}>
-                Copy join URL
-              </button>
-              <button onClick={() => downloadSvg('synctimer-qr.svg', svgMarkup)} disabled={!validation.valid || !svgMarkup}>
-                Export SVG
-              </button>
-              <button onClick={() => downloadPng(joinUrl, 'synctimer-qr.png', 1024, branding)} disabled={!validation.valid}>
-                Export PNG
-              </button>
-            </div>
-          </div>
-
-          <div className="preview">
-            <div className="preview-header">
-              <h3>QR preview</h3>
-              <span className="pill">{branding.enabled ? 'Quiet zone: boosted for logo' : 'Quiet zone: 4 modules'}</span>
-            </div>
-            {validation.valid ? (
-              <div className="qr" dangerouslySetInnerHTML={{ __html: svgMarkup }} />
-            ) : (
-              <div className="note">Fix validation to render QR.</div>
-            )}
-            <div className="summary">
-              <p>
-                Mode: <strong>{config.mode === 'wifi' ? 'Wi-Fi' : 'Nearby'}</strong> · Hosts:{' '}
-                <strong>{config.hosts.length}</strong>
-              </p>
-              <p>Device names: {deviceNames.join(', ')}</p>
-            </div>
-          </div>
-
-          {config.printMode && validation.valid && (
-            <div className="print-area" id="print-area">
-              <div className="label">
-                <p className="room">{config.roomLabel || 'SyncTimer room'}</p>
-                <p className="subtitle">Scan to join SyncTimer</p>
-                <div className="qr" dangerouslySetInnerHTML={{ __html: svgMarkup }} />
-              </div>
-              <div className="row">
-                <button onClick={handlePrint}>Print</button>
-              </div>
-            </div>
-          )}
-        </section>
-      </main>
-
-      <footer className="footer">
-        <div>
-          <h4>Troubleshooting</h4>
-          <ul>
-            <li>Ensure each host UUID is correct and unique.</li>
-            <li>Transport hint is always bonjour in Wi-Fi mode for reliability.</li>
-            <li>Device names are optional; blanks auto-label as Host 1…N.</li>
-            <li>Use the generator link to share this setup.</li>
-          </ul>
-        </div>
-        <div>
-          <h4>Notes</h4>
-          <ul>
-            <li>Export SVG/PNG for print-quality QR codes.</li>
-            <li>Print mode hides the rest of the page when printing.</li>
-            <li>Display mode shows a full-screen QR overlay (Esc closes).</li>
-          </ul>
-        </div>
-      </footer>
+      <QrWizardPage
+        qrModel={qrModel}
+        activeStep={activeStep}
+        onStepChange={setActiveStep}
+        showManualHostEditor={showManualHostEditor}
+        onShowManualHostEditor={setShowManualHostEditor}
+      />
 
       <AnimatePresence>
-        {config.displayMode && validation.valid && (
+        {qrModel.state.config.displayMode && qrModel.derived.validation.valid && (
           <motion.div
             className="overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setConfig({ ...config, displayMode: false })}
+            onClick={() => qrModel.setters.setConfig({ ...qrModel.state.config, displayMode: false })}
           >
             <div className="overlay-inner" onClick={(e) => e.stopPropagation()}>
               <div className="overlay-content">
-                <div className="qr" dangerouslySetInnerHTML={{ __html: svgMarkup }} />
-                <p className="room">{config.roomLabel || 'SyncTimer'}</p>
-                <button onClick={() => setConfig({ ...config, displayMode: false })}>Close</button>
+                <div className="qr" dangerouslySetInnerHTML={{ __html: qrModel.derived.svgMarkup }} />
+                <p className="room">{qrModel.state.config.roomLabel || 'SyncTimer'}</p>
+                <button onClick={() => qrModel.setters.setConfig({ ...qrModel.state.config, displayMode: false })}>
+                  Close
+                </button>
               </div>
             </div>
           </motion.div>
@@ -486,85 +277,3 @@ export default function QrTool() {
   );
 }
 
-function Step({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="card">
-      <h3>{title}</h3>
-      {children}
-    </div>
-  );
-}
-
-function HostList({
-  hosts,
-  deviceNames,
-  onChange,
-  onRemove,
-  onMove,
-  onCopy,
-}: {
-  hosts: HostEntry[];
-  deviceNames: string[];
-  onChange: (idx: number, patch: Partial<HostEntry>) => void;
-  onRemove: (idx: number) => void;
-  onMove: (idx: number, delta: number) => void;
-  onCopy: (text: string) => void;
-}) {
-  if (!hosts.length) return <div className="note">No hosts added yet.</div>;
-  return (
-    <div className="host-list">
-      {hosts.map((host, idx) => (
-        <div key={host.uuid} className="host-row">
-          <div className="field">
-            <label>Device name</label>
-            <input
-              type="text"
-              value={host.deviceName ?? ''}
-              onChange={(e) => onChange(idx, { deviceName: e.target.value })}
-              placeholder={deviceNames[idx]}
-            />
-          </div>
-          <div className="field">
-            <label>UUID</label>
-            <input type="text" value={host.uuid} readOnly />
-          </div>
-          <div className="row compact">
-            <button onClick={() => onCopy(host.uuid)}>Copy UUID</button>
-            <button onClick={() => onMove(idx, -1)} disabled={idx === 0}>
-              ↑
-            </button>
-            <button onClick={() => onMove(idx, 1)} disabled={idx === hosts.length - 1}>
-              ↓
-            </button>
-            <button onClick={() => onRemove(idx)}>Remove</button>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function Summary({ checklist, errors }: { checklist: ValidationResult['checklist']; errors: string[] }) {
-  return (
-    <div className="summary">
-      <ul className="checklist">
-        {checklist.map((item) => (
-          <li key={item.label} className={item.ok ? 'ok' : 'bad'}>
-            {item.ok ? '✔︎' : '•'} {item.label}
-          </li>
-        ))}
-      </ul>
-      {errors.length > 0 && (
-        <div className="errors">
-          {errors.map((err) => (
-            <p key={err}>{err}</p>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function clampPct(value: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, value));
-}
