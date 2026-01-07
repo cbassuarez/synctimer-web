@@ -24,5 +24,5 @@ test('home header renders and qr link navigates', async ({ page }) => {
   await expect(page.locator('.site-header')).toBeVisible();
 
   await page.getByRole('link', { name: 'Generate Join QR' }).click();
-  await expect(page).toHaveURL(/\\/qr/);
+  await expect(page).toHaveURL(/\/qr/);
 });
