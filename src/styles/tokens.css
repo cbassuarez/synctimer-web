@@ -18,6 +18,16 @@
   --step-5: 3.1rem;
 }
 
+:root[data-theme='dark'] {
+  --accent: #60e144;
+  --bg: #0b0f14;
+  --surface: #141b26;
+  --ink: #f5f7fb;
+  --muted: #a6b0bf;
+  --hairline: #243041;
+  --shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
 * {
   box-sizing: border-box;
 }

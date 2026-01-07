@@ -65,6 +65,16 @@ body::before {
   gap: 24px;
 }
 
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+}
+
+.brand-logo img {
+  height: clamp(22px, 2.4vw, 28px);
+  width: auto;
+}
+
 .brand {
   display: flex;
   align-items: baseline;
@@ -134,6 +144,20 @@ body::before {
 .nav-cta {
   border-color: var(--hairline);
   color: var(--ink);
+}
+
+.theme-toggle {
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: var(--step--1);
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  border-color: var(--hairline);
 }
 
 .site-footer {
@@ -562,6 +586,14 @@ body::before {
   object-fit: cover;
 }
 
+.media-frame.flat-media {
+  padding: 0;
+}
+
+.media-frame.flat-media img {
+  border-radius: 18px;
+}
+
 .media-frame.placeholder {
   color: var(--muted);
   font-size: var(--step--1);
@@ -843,6 +875,26 @@ body::before {
 .get-buttons {
   display: grid;
   gap: 8px;
+}
+
+.button .version-sep {
+  margin: 0 6px;
+  opacity: 0.6;
+}
+
+.button .version-tag {
+  font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(11, 15, 20, 0.08);
+  border: 1px solid var(--hairline);
+}
+
+html[data-theme='dark'] .button .version-tag {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .get-android {

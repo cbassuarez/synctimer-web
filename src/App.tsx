@@ -15,6 +15,7 @@ import Press from './pages/Press';
 import QrTool from './pages/QrTool';
 import Community from './pages/Community';
 import CommunitySubpage from './pages/CommunitySubpage';
+import { ThemeProvider } from './theme/useTheme';
 
 const pageTransition = {
   initial: { opacity: 0, y: 16 },
@@ -41,109 +42,111 @@ export default function App() {
   const location = useLocation();
 
   return (
-    <div className="app">
-      <SiteHeader />
-      <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
-          <Route
-            path="/"
-            element={
-              <PageTransition>
-                <Home />
-              </PageTransition>
-            }
-          />
-          <Route
-            path="/features"
-            element={
-              <PageTransition>
-                <Features />
-              </PageTransition>
-            }
-          />
-          <Route
-            path="/sync"
-            element={
-              <PageTransition>
-                <Sync />
-              </PageTransition>
-            }
-          />
-          <Route
-            path="/cue-sheets"
-            element={
-              <PageTransition>
-                <CueSheets />
-              </PageTransition>
-            }
-          />
-          <Route
-            path="/app-clip"
-            element={
-              <PageTransition>
-                <AppClip />
-              </PageTransition>
-            }
-          />
-          <Route
-            path="/support"
-            element={
-              <PageTransition>
-                <Support />
-              </PageTransition>
-            }
-          />
-          <Route
-            path="/community"
-            element={
-              <PageTransition>
-                <Community />
-              </PageTransition>
-            }
-          />
-          <Route
-            path="/community/:slug"
-            element={
-              <PageTransition>
-                <CommunitySubpage />
-              </PageTransition>
-            }
-          />
-          <Route
-            path="/privacy"
-            element={
-              <PageTransition>
-                <Privacy />
-              </PageTransition>
-            }
-          />
-          <Route
-            path="/terms"
-            element={
-              <PageTransition>
-                <Terms />
-              </PageTransition>
-            }
-          />
-          <Route
-            path="/press"
-            element={
-              <PageTransition>
-                <Press />
-              </PageTransition>
-            }
-          />
-          <Route
-            path="/qr/*"
-            element={
-              <PageTransition>
-                <QrTool />
-              </PageTransition>
-            }
-          />
-        </Routes>
-      </AnimatePresence>
-      <SiteFooter />
-    </div>
+    <ThemeProvider>
+      <div className="app">
+        <SiteHeader />
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route
+              path="/"
+              element={
+                <PageTransition>
+                  <Home />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/features"
+              element={
+                <PageTransition>
+                  <Features />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/sync"
+              element={
+                <PageTransition>
+                  <Sync />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/cue-sheets"
+              element={
+                <PageTransition>
+                  <CueSheets />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/app-clip"
+              element={
+                <PageTransition>
+                  <AppClip />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/support"
+              element={
+                <PageTransition>
+                  <Support />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/community"
+              element={
+                <PageTransition>
+                  <Community />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/community/:slug"
+              element={
+                <PageTransition>
+                  <CommunitySubpage />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/privacy"
+              element={
+                <PageTransition>
+                  <Privacy />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/terms"
+              element={
+                <PageTransition>
+                  <Terms />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/press"
+              element={
+                <PageTransition>
+                  <Press />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/qr/*"
+              element={
+                <PageTransition>
+                  <QrTool />
+                </PageTransition>
+              }
+            />
+          </Routes>
+        </AnimatePresence>
+        <SiteFooter />
+      </div>
+    </ThemeProvider>
   );
 }
