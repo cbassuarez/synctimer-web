@@ -51,9 +51,9 @@ function useQrModel(): QrModel {
   const [copyMessage, setCopyMessage] = useState('');
   const [branding] = useState<BrandingOptions>({
     enabled: true,
-    corner: 'bottom-right',
-    sizePct: 0.13,
-    patchPaddingPct: 0.12,
+    corner: 'center',
+    sizePct: 0.24,
+    patchPaddingPct: 0.1,
     printSafe: false,
   });
   const prefillAppliedRef = useRef(false);
