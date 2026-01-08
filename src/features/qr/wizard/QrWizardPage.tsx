@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import QrOutputMonitor from './QrOutputMonitor';
 import StepHosts from './steps/StepHosts';
@@ -51,6 +51,7 @@ export type QrModel = {
   actions: {
     addHosts: (newHosts: HostEntry[]) => void;
     parseHostInput: (value: string) => void;
+    importFromText: (value: string) => boolean;
     handleManualAdd: () => void;
     updateHost: (idx: number, patch: Partial<HostEntry>) => void;
     removeHost: (idx: number) => void;
@@ -71,6 +72,22 @@ export default function QrWizardPage({
 }) {
   const [showManualHostEditor, setShowManualHostEditor] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
+  const prefillAppliedRef = useRef(false);
+
+  useEffect(() => {
+    if (prefillAppliedRef.current) return;
+    const href = window.location.href;
+    if (!href.includes('prefill=') && !href.includes('#state=')) return;
+    prefillAppliedRef.current = true;
+    const ok = qrModel.actions.importFromText(href);
+    if (ok) {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('prefill')) {
+        url.searchParams.delete('prefill');
+        window.history.replaceState({}, '', url.toString());
+      }
+    }
+  }, [qrModel.actions]);
 
   useEffect(() => {
     const onAfterPrint = () => {
@@ -99,6 +116,7 @@ export default function QrWizardPage({
 
   const hostUuidsOk = qrModel.state.config.hosts.every((host) => uuidRegex.test(host.uuid));
   const hostsReady = qrModel.state.config.hosts.length > 0 && hostUuidsOk;
+  const modeReady = qrModel.state.config.mode === 'wifi' || qrModel.state.config.mode === 'nearby';
   const minBuildError = qrModel.derived.validation.errors.includes('min_build must be a positive integer.');
   const minVersionError = qrModel.derived.validation.errors.includes('min_version must look like x.y or x.y.z.');
   const roomOptionsReady = !minBuildError && !minVersionError;
@@ -107,7 +125,7 @@ export default function QrWizardPage({
   const canAdvance = useMemo(() => {
     switch (activeStep) {
       case 0:
-        return qrModel.state.config.mode === 'wifi' || qrModel.state.config.mode === 'nearby';
+        return modeReady && hostsReady;
       case 1:
         return hostsReady;
       case 2:
@@ -117,7 +135,7 @@ export default function QrWizardPage({
       default:
         return false;
     }
-  }, [activeStep, hostsReady, roomOptionsReady, reviewReady, qrModel.state.config.mode]);
+  }, [activeStep, hostsReady, modeReady, roomOptionsReady, reviewReady]);
 
   const primaryLabel = useMemo(() => {
     if (activeStep === steps.length - 1) return 'Generate another';

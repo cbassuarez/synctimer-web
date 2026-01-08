@@ -27,6 +27,32 @@ export default function StepMode({ qrModel }: { qrModel: QrModel }) {
           <span className="qr-mode-card__desc">Nearby uses Bluetooth for discovery.</span>
         </button>
       </div>
+
+      <div className="qr-paste-card">
+        <div className={`field ${qrModel.state.transportHintNote ? 'is-invalid' : ''}`}>
+          <label htmlFor="step1-paste">Paste link</label>
+          <textarea
+            id="step1-paste"
+            rows={3}
+            value={qrModel.state.hostInput}
+            onChange={(e) => qrModel.setters.setHostInput(e.target.value)}
+            placeholder="https://synctimerapp.com/join?... or .../host"
+            data-testid="step1-paste"
+          />
+          {qrModel.state.transportHintNote && <p className="field-help error">{qrModel.state.transportHintNote}</p>}
+          <p className="field-help qr-paste-card__hint">Paste a /qr prefill, /host, or /join link.</p>
+        </div>
+        <div className="row">
+          <button
+            type="button"
+            className="secondary"
+            data-testid="step1-import"
+            onClick={() => qrModel.actions.importFromText(qrModel.state.hostInput)}
+          >
+            Import
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
