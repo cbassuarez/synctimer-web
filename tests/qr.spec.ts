@@ -5,13 +5,15 @@ async function goToDeployWithOneHost(page: Page) {
   await page.goto('/qr');
 
   // If persisted hash/prefill state auto-jumped to later steps (often Step 5),
-  // walk back to Step 1 deterministically.
-  for (let i = 0; i < 4; i++) {
-    const onStep1 = await page.getByTestId('wizard-step-1').isVisible().catch(() => false);
-    if (onStep1) break;
-    await page.getByTestId('wizard-back').click();
+  // jump back to Step 1 via the step rail.
+  const railStepOne = page.getByTestId('wizard-rail-step-1');
+  const railFallbackStepOne = page.locator('.qr-steps__node').first();
+  await expect(railStepOne.or(railFallbackStepOne)).toBeVisible({ timeout: 15000 });
+  if (await railStepOne.count()) {
+    await railStepOne.click();
+  } else {
+    await railFallbackStepOne.click();
   }
-
   await expect(page.getByTestId('wizard-step-1')).toBeVisible({ timeout: 15000 });
 
   // Step 1: Mode

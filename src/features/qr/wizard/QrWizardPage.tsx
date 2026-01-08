@@ -230,6 +230,7 @@ export default function QrWizardPage({
                   key={step.title}
                   type="button"
                   className={`qr-steps__node ${isActive ? 'is-active' : ''} ${canJump ? 'is-ready' : ''}`}
+                  data-testid={`wizard-rail-step-${idx + 1}`}
                   onClick={() => canJump && setActiveStep(idx)}
                   disabled={!canJump}
                 >
