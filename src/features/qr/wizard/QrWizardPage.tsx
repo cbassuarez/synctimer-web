@@ -70,16 +70,14 @@ export default function QrWizardPage({
   qrModel: QrModel;
 }) {
   const [showManualHostEditor, setShowManualHostEditor] = useState(false);
-  const [activeStep, setActiveStep] = useState(0);
-
-  useEffect(() => {
+  const [activeStep, setActiveStep] = useState(() => {
     const stored = sessionStorage.getItem('qr-wizard-step');
-    if (!stored) return;
-    const parsed = Number(stored);
+    const parsed = stored ? Number(stored) : Number.NaN;
     if (!Number.isNaN(parsed) && parsed >= 0 && parsed <= 4) {
-      setActiveStep(parsed);
+      return parsed;
     }
-  }, []);
+    return 1;
+  });
 
   useEffect(() => {
     sessionStorage.setItem('qr-wizard-step', String(activeStep));
