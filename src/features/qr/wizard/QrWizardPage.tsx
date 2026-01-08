@@ -10,6 +10,7 @@ import StepHosts from './steps/StepHosts';
 import StepPaste from './steps/StepPaste';
 import StepSession from './steps/StepSession';
 import { HostEntry } from '../../qr/model';
+import type { BrandingCorner } from '../qr';
 
 export type QrModel = {
   state: {
@@ -45,7 +46,7 @@ export type QrModel = {
     };
     branding: {
       enabled: boolean;
-      corner: string;
+      corner: BrandingCorner;
       sizePct: number;
       patchPaddingPct: number;
       printSafe: boolean;
@@ -179,4 +180,3 @@ export default function QrWizardPage({
     </div>
   );
 }
-
