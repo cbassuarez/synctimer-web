@@ -30,8 +30,15 @@ export function encodeState(config: GeneratorConfig): string {
 
 export function decodeState(hash: string): GeneratorConfig | null {
   if (!hash.startsWith('#')) return null;
-  const trimmed = hash.slice(1);
-  const [key, value] = trimmed.split('=');
+    const trimmed = hash.slice(1);
+
+  // IMPORTANT: base64 payload can contain '=' padding.
+  // So we must split on the *first* '=' only.
+  const eq = trimmed.indexOf('=');
+  if (eq === -1) return null;
+
+  const key = trimmed.slice(0, eq);
+  const value = trimmed.slice(eq + 1);
   if (key !== 'state' || !value) return null;
   try {
     const json = decodeURIComponent(escape(atob(value)));
