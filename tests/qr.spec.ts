@@ -7,6 +7,7 @@ async function goToDeployWithOneHost(page: any) {
   // Step 1: Mode
   await expect(page.getByTestId('mode-wifi')).toBeVisible({ timeout: 15000 });
   await page.getByTestId('mode-wifi').click();
+  await expect(page.getByTestId('wizard-next')).toBeEnabled();
   await page.getByTestId('wizard-next').click();
 
   // Step 2: Hosts

@@ -5,7 +5,7 @@ import StepHosts from './steps/StepHosts';
 import StepMode from './steps/StepMode';
 import StepReview from './steps/StepReview';
 import StepRoomOptions from './steps/StepRoomOptions';
-import { HostEntry, uuidRegex } from '../../qr/model';
+import { HostEntry } from '../../qr/model';
 import type { BrandingCorner } from '../qr';
 
 export type QrModel = {
@@ -114,8 +114,8 @@ export default function QrWizardPage({
     { title: 'Deploy', label: 'Deploy' },
   ];
 
-  const hostUuidsOk = qrModel.state.config.hosts.every((host) => uuidRegex.test(host.uuid));
-  const hostsReady = qrModel.state.config.hosts.length > 0 && hostUuidsOk;
+  const hostUuidsPresent = qrModel.state.config.hosts.every((host) => host.uuid.trim().length > 0);
+  const hostsReady = qrModel.state.config.hosts.length > 0 && hostUuidsPresent;
   const modeReady = qrModel.state.config.mode === 'wifi' || qrModel.state.config.mode === 'nearby';
   const minBuildError = qrModel.derived.validation.errors.includes('min_build must be a positive integer.');
   const minVersionError = qrModel.derived.validation.errors.includes('min_version must look like x.y or x.y.z.');
@@ -125,7 +125,7 @@ export default function QrWizardPage({
   const canAdvance = useMemo(() => {
     switch (activeStep) {
       case 0:
-        return modeReady && hostsReady;
+        return modeReady;
       case 1:
         return hostsReady;
       case 2:
