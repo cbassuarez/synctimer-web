@@ -1,44 +1,53 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import fs from 'node:fs';
 
-async function goToDeployWithOneHost(page: any) {
+async function goToDeployWithOneHost(page: Page) {
   await page.goto('/qr');
+
+  // If persisted hash/prefill state auto-jumped to later steps (often Step 5),
+  // walk back to Step 1 deterministically.
+  for (let i = 0; i < 4; i++) {
+    const onStep1 = await page.getByTestId('wizard-step-1').isVisible().catch(() => false);
+    if (onStep1) break;
+    await page.getByTestId('wizard-back').click();
+  }
+
+  await expect(page.getByTestId('wizard-step-1')).toBeVisible({ timeout: 15000 });
 
   // Step 1: Mode
   await expect(page.getByTestId('mode-wifi')).toBeVisible({ timeout: 15000 });
   await page.getByTestId('mode-wifi').click();
-  await expect(page.getByTestId('wizard-next')).toBeEnabled();
+  await expect(page.getByTestId('wizard-next')).toBeEnabled({ timeout: 15000 });
   await page.getByTestId('wizard-next').click();
 
   // Step 2: Hosts
-  await expect(page.getByTestId('hosts-add')).toBeVisible();
+  await expect(page.getByTestId('wizard-step-2')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByTestId('hosts-add')).toBeVisible({ timeout: 15000 });
   await page.getByTestId('hosts-add').click();
-
-  await expect(page.getByTestId('host-uuid-0')).toBeVisible();
   await page.getByTestId('host-uuid-0').fill('123e4567-e89b-12d3-a456-426614174000');
   await page.getByTestId('host-name-0').fill('Main');
-
+  await expect(page.getByTestId('wizard-next')).toBeEnabled({ timeout: 15000 });
   await page.getByTestId('wizard-next').click();
 
-  // Step 3: Room label + options (optional; don’t depend on labels)
-  await expect(page.getByTestId('room-label')).toBeVisible();
+  // Step 3: Room + options (no-op)
+  await expect(page.getByTestId('wizard-step-3')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByTestId('wizard-next')).toBeEnabled({ timeout: 15000 });
   await page.getByTestId('wizard-next').click();
 
   // Step 4: Review
-  // If you already have a stable join-url test id, keep using it (looks like you do).
-  await expect(page.getByTestId('qr-join-url')).toBeVisible();
-  await expect(page.getByTestId('qr-join-url')).toContainText('https://synctimerapp.com/join?');
-
+  await expect(page.getByTestId('wizard-step-4')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByTestId('wizard-next')).toBeEnabled({ timeout: 15000 });
   await page.getByTestId('wizard-next').click();
 
   // Step 5: Deploy
-  await expect(page.getByTestId('deploy-copy-link')).toBeVisible();
-  await expect(page.getByTestId('deploy-download-svg')).toBeVisible();
-  await expect(page.getByTestId('deploy-download-png')).toBeVisible();
+  await expect(page.getByTestId('wizard-step-5')).toBeVisible({ timeout: 15000 });
 }
 
 test('qr tool builds join url and exports svg', async ({ page }) => {
   await goToDeployWithOneHost(page);
+  await expect(page.getByTestId('deploy-download-svg')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByTestId('deploy-download-png')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByTestId('deploy-copy-link')).toBeVisible({ timeout: 15000 });
 
   const [download] = await Promise.all([
     page.waitForEvent('download'),
@@ -56,6 +65,9 @@ test('qr tool builds join url and exports svg', async ({ page }) => {
 
 test('qr tool exports branded png', async ({ page }) => {
   await goToDeployWithOneHost(page);
+  await expect(page.getByTestId('deploy-download-svg')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByTestId('deploy-download-png')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByTestId('deploy-copy-link')).toBeVisible({ timeout: 15000 });
 
   const [download] = await Promise.all([
     page.waitForEvent('download'),

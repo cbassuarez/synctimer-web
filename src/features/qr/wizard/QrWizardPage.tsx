@@ -242,7 +242,7 @@ export default function QrWizardPage({
         </div>
       </header>
 
-      <section className="qr-wizard__content">
+      <section className="qr-wizard__content" data-testid={`wizard-step-${activeStep + 1}`}>
         <AnimatePresence mode="wait">
           <motion.div
             key={activeStep}
