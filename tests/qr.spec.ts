@@ -5,13 +5,9 @@ async function goToDeployWithOneHost(page: Page) {
   await page.goto('/qr');
 
   // If persisted hash/prefill state auto-jumped to later steps (often Step 5),
-  // walk back to Step 1 deterministically.
-  for (let i = 0; i < 4; i++) {
-    const onStep1 = await page.getByTestId('wizard-step-1').isVisible().catch(() => false);
-    if (onStep1) break;
-    await page.getByTestId('wizard-back').click();
-  }
-
+  // jump back to Step 1 via the step rail.
+  await expect(page.getByTestId('wizard-rail-step-1')).toBeVisible({ timeout: 15000 });
+  await page.getByTestId('wizard-rail-step-1').click();
   await expect(page.getByTestId('wizard-step-1')).toBeVisible({ timeout: 15000 });
 
   // Step 1: Mode
