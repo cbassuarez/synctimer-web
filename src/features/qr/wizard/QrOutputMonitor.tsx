@@ -44,44 +44,60 @@ export function QrPreviewBlock({ qrModel }: { qrModel: QrModel }) {
   );
 }
 
-export function QrExportActions({ qrModel }: { qrModel: QrModel }) {
-  const isReady = qrModel.derived.validation.valid && qrModel.state.config.hosts.length > 0;
-
-  return (
-    <div className="qr-output__actions">
-      <button onClick={qrModel.actions.handleDisplayMode} disabled={!isReady}>
-        Display
-      </button>
-      <button onClick={qrModel.actions.handlePrintLabel} disabled={!isReady}>
-        Print label
-      </button>
-      <button
-        onClick={() => qrModel.actions.downloadSvg('synctimer-qr.svg', qrModel.derived.svgMarkup)}
-        disabled={!isReady || !qrModel.derived.svgMarkup}
-      >
-        Download SVG
-      </button>
-      <button
-        onClick={() =>
-          qrModel.actions.downloadPng(qrModel.derived.joinUrl, 'synctimer-qr.png', 1024, qrModel.derived.branding)
-        }
-        disabled={!isReady}
-      >
-        Download PNG
-      </button>
-    </div>
-  );
-}
-
 export default function QrOutputMonitor({ qrModel }: { qrModel: QrModel }) {
+  const isReady = qrModel.derived.validation.valid && qrModel.state.config.hosts.length > 0;
+  const canPrint = typeof window !== 'undefined' && 'print' in window;
+
+  const handlePrint = () => {
+    if (!isReady || !canPrint) return;
+    qrModel.setters.setConfig((prev) => ({ ...prev, printMode: true }));
+    window.setTimeout(() => {
+      window.print();
+    }, 0);
+  };
+
   return (
-    <aside className="qr-output">
-      <h2>Output monitor</h2>
-      <QrJoinUrlBlock qrModel={qrModel} />
-      <QrPreviewBlock qrModel={qrModel} />
-      <QrExportActions qrModel={qrModel} />
-      <p className="field-help">Branding is applied automatically.</p>
+    <aside className="qr-output qr-output--hero">
+      <div className="qr-output__hero">
+        {isReady ? (
+          <div className="qr" dangerouslySetInnerHTML={{ __html: qrModel.derived.svgMarkup }} />
+        ) : (
+          <div className="note">Complete the required fields to render the QR.</div>
+        )}
+      </div>
+      <div className="qr-output__actions qr-output__actions--compact">
+        <button type="button" onClick={() => qrModel.actions.handleCopy(qrModel.derived.joinUrl)} disabled={!isReady}>
+          Copy link
+        </button>
+        <button
+          type="button"
+          onClick={() => qrModel.actions.downloadPng(qrModel.derived.joinUrl, 'synctimer-qr.png', 1024, qrModel.derived.branding)}
+          disabled={!isReady}
+        >
+          Download PNG
+        </button>
+        <button
+          type="button"
+          onClick={() => qrModel.actions.downloadSvg('synctimer-qr.svg', qrModel.derived.svgMarkup)}
+          disabled={!isReady || !qrModel.derived.svgMarkup}
+        >
+          Download SVG
+        </button>
+        {canPrint && (
+          <button type="button" onClick={handlePrint} disabled={!isReady}>
+            Print
+          </button>
+        )}
+      </div>
+      {qrModel.state.copyMessage && <p className="field-help">{qrModel.state.copyMessage}</p>}
+      {!isReady && qrModel.derived.validation.errors.length > 0 && (
+        <div className="note">
+          {qrModel.derived.validation.errors.map((error) => (
+            <p key={error}>{error}</p>
+          ))}
+        </div>
+      )}
+      <p className="field-help">Scan to open Join App Clip.</p>
     </aside>
   );
 }
-
