@@ -4,6 +4,7 @@ const QUIET_ZONE = 4;
 const BRANDING_MARGIN_TARGET = 0.19;
 const BRANDING_MARGIN_PRINT_SAFE = 0.22;
 const LOGO_PATH = '/brand/synctimer-logo.png';
+let cachedLogoDataUrl: string | null | undefined;
 
 export type BrandingCorner = 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'center';
 
@@ -27,10 +28,13 @@ export async function generateSvgMarkup(text: string, width = 320, branding?: Br
     color: branding?.enabled ? { dark: '#000000', light: '#00000000' } : undefined,
   });
   if (!branding?.enabled) return svgMarkup;
-  const layout = resolveBrandingLayout(width, modules, margin, branding);
+  const totalModules = modules + margin * 2;
+  const viewBoxSize = getSvgViewBoxSize(svgMarkup, width);
+  const scale = totalModules > 0 ? viewBoxSize / totalModules : 0;
+  const layout = resolveBrandingLayout(modules, margin, scale, branding);
   if (!layout) return svgMarkup;
-  const tileCorner = width * 0.06;
-  const logoUrl = resolveLogoUrl();
+  const tileCorner = viewBoxSize * 0.06;
+  const logoUrl = (await getLogoDataUrl()) ?? resolveLogoUrl();
   const defs = [
     '<defs>',
     '<filter id="brandShadow">',
@@ -38,13 +42,13 @@ export async function generateSvgMarkup(text: string, width = 320, branding?: Br
     '</filter>',
     '</defs>',
   ].join('');
-  const tileRect = `<rect x="0" y="0" width="${width}" height="${width}" rx="${tileCorner}" fill="white" />`;
+  const tileRect = `<rect x="0" y="0" width="${viewBoxSize}" height="${viewBoxSize}" rx="${tileCorner}" fill="white" />`;
   const overlay = [
     '<g class="qr-branding" pointer-events="none">',
     `<rect x="${layout.plateX}" y="${layout.plateY}" width="${layout.plateSize}" height="${layout.plateSize}" rx="${layout.plateRadius}" ry="${layout.plateRadius}" fill="rgba(255,255,255,0.98)" filter="url(#brandShadow)" />`,
     `<rect x="${layout.plateX}" y="${layout.plateY}" width="${layout.plateSize}" height="${layout.plateSize}" rx="${layout.plateRadius}" ry="${layout.plateRadius}" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="${layout.outerStroke}" />`,
     `<rect x="${layout.plateX}" y="${layout.plateY}" width="${layout.plateSize}" height="${layout.plateSize}" rx="${layout.plateRadius}" ry="${layout.plateRadius}" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="${layout.innerStroke}" />`,
-    `<image href="${logoUrl}" x="${layout.logoX}" y="${layout.logoY}" width="${layout.logoSize}" height="${layout.logoSize}" preserveAspectRatio="xMidYMid meet" />`,
+    `<image href="${logoUrl}" xlink:href="${logoUrl}" x="${layout.logoX}" y="${layout.logoY}" width="${layout.logoSize}" height="${layout.logoSize}" preserveAspectRatio="xMidYMid meet" />`,
     '</g>',
   ].join('');
   const withTile = svgMarkup.replace(/<svg([^>]*)>/, `<svg$1>${defs}${tileRect}`);
@@ -108,6 +112,49 @@ function resolveMargin(modules: number, branding?: BrandingOptions): number {
 }
 
 function resolveBrandingLayout(
+  modules: number,
+  margin: number,
+  scale: number,
+  branding: BrandingOptions,
+) {
+  if (branding.corner === 'center') {
+    return resolveCenterBrandingLayout(modules, margin, scale, branding);
+  }
+  const totalSize = (modules + margin * 2) * scale;
+  return resolveCornerBrandingLayout(totalSize, modules, margin, branding);
+}
+
+function resolveCenterBrandingLayout(
+  modules: number,
+  margin: number,
+  scale: number,
+  branding: BrandingOptions,
+) {
+  const paddingPct = clamp(branding.patchPaddingPct, 0.08, 0.2);
+  const plateSideModules = clamp(modules * 0.24, modules * 0.2, modules * 0.28);
+  const plateXModules = margin + (modules - plateSideModules) / 2;
+  const plateYModules = margin + (modules - plateSideModules) / 2;
+  const insetModules = plateSideModules * paddingPct;
+  const logoSizeModules = plateSideModules - insetModules * 2;
+  if (logoSizeModules <= 0 || scale <= 0) return null;
+  const plateRadius = plateSideModules * 0.26 * scale;
+  const plateX = plateXModules * scale;
+  const plateY = plateYModules * scale;
+  const plateSize = plateSideModules * scale;
+  return {
+    plateX,
+    plateY,
+    plateSize,
+    plateRadius,
+    outerStroke: Math.max(0.5, plateSideModules * 0.012 * scale),
+    innerStroke: Math.max(0.5, plateSideModules * 0.008 * scale),
+    logoSize: logoSizeModules * scale,
+    logoX: (plateXModules + insetModules) * scale,
+    logoY: (plateYModules + insetModules) * scale,
+  };
+}
+
+function resolveCornerBrandingLayout(
   totalSize: number,
   modules: number,
   margin: number,
@@ -118,28 +165,6 @@ function resolveBrandingLayout(
   const modulePx = totalModules > 0 ? totalSize / totalModules : 0;
   const marginPx = margin * modulePx;
   if (modulePx <= 0) return null;
-
-  if (branding.corner === 'center') {
-    const innerSide = totalSize - 2 * marginPx;
-    const plateSide = clamp(innerSide * branding.sizePct, innerSide * 0.18, innerSide * 0.3);
-    const plateX = marginPx + (innerSide - plateSide) / 2;
-    const plateY = marginPx + (innerSide - plateSide) / 2;
-    const plateRadius = plateSide * 0.26;
-    const inset = plateSide * paddingPct;
-    const logoSize = plateSide - inset * 2;
-    if (logoSize <= 0) return null;
-    return {
-      plateX,
-      plateY,
-      plateSize: plateSide,
-      plateRadius,
-      outerStroke: Math.max(0.5, plateSide * 0.012),
-      innerStroke: Math.max(0.5, plateSide * 0.008),
-      logoSize,
-      logoX: plateX + inset,
-      logoY: plateY + inset,
-    };
-  }
 
   const sizePct = clamp(branding.sizePct, 0.1, 0.2);
   const marginPct = totalModules > 0 ? margin / totalModules : 0;
@@ -182,7 +207,9 @@ async function drawBrandingOverlay(
 ): Promise<void> {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
-  const layout = resolveBrandingLayout(canvas.width, modules, margin, branding);
+  const totalModules = modules + margin * 2;
+  const scale = totalModules > 0 ? canvas.width / totalModules : 0;
+  const layout = resolveBrandingLayout(modules, margin, scale, branding);
   if (!layout) return;
   const logo = await loadImage(resolveLogoUrl());
   if (!logo) return;
@@ -251,6 +278,35 @@ async function loadImage(src: string): Promise<HTMLImageElement | null> {
 
 function resolveLogoUrl(): string {
   return new URL(LOGO_PATH, window.location.origin).toString();
+}
+
+function getSvgViewBoxSize(svg: string, fallback: number): number {
+  const match = svg.match(/viewBox="([^"]+)"/i);
+  if (!match) return fallback;
+  const parts = match[1].trim().split(/[\s,]+/);
+  if (parts.length < 4) return fallback;
+  const width = Number(parts[2]);
+  return Number.isFinite(width) && width > 0 ? width : fallback;
+}
+
+async function getLogoDataUrl(): Promise<string | null> {
+  if (cachedLogoDataUrl !== undefined) return cachedLogoDataUrl;
+  try {
+    const response = await fetch(resolveLogoUrl());
+    if (!response.ok) throw new Error('Failed to load logo');
+    const blob = await response.blob();
+    cachedLogoDataUrl = await new Promise<string | null>((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        resolve(typeof reader.result === 'string' ? reader.result : null);
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    cachedLogoDataUrl = null;
+  }
+  return cachedLogoDataUrl;
 }
 
 function clamp(value: number, min: number, max: number): number {
