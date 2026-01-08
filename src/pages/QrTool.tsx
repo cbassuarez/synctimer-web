@@ -273,18 +273,10 @@ function useQrModel(): QrModel {
 
 export default function QrTool() {
   const qrModel = useQrModel();
-  const [activeStep, setActiveStep] = useState(0);
-  const [showManualHostEditor, setShowManualHostEditor] = useState(false);
 
   return (
     <Page className="qr-page">
-      <QrWizardPage
-        qrModel={qrModel}
-        activeStep={activeStep}
-        onStepChange={setActiveStep}
-        showManualHostEditor={showManualHostEditor}
-        onShowManualHostEditor={setShowManualHostEditor}
-      />
+      <QrWizardPage qrModel={qrModel} />
 
       <AnimatePresence>
         {qrModel.state.config.displayMode && qrModel.derived.validation.valid && (

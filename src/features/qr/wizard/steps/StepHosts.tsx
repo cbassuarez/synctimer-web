@@ -16,7 +16,20 @@ export default function StepHosts({
   return (
     <div className="qr-step">
       <h2>Hosts</h2>
-      <p className="muted">Review the host list and adjust labels or order.</p>
+      <p className="muted">Paste host links or add hosts manually.</p>
+
+      <div className={`field ${qrModel.state.transportHintNote ? 'is-invalid' : ''}`}>
+        <label htmlFor="host-paste">Paste Host Share Link(s)</label>
+        <textarea
+          id="host-paste"
+          rows={4}
+          value={qrModel.state.hostInput}
+          onChange={(e) => qrModel.setters.setHostInput(e.target.value)}
+          placeholder="https://synctimerapp.com/host?..."
+        />
+        {qrModel.state.transportHintNote && <p className="field-help error">{qrModel.state.transportHintNote}</p>}
+        <p className="field-help">We’ll extract host UUIDs as soon as the link is pasted.</p>
+      </div>
 
       <HostList
         hosts={qrModel.state.config.hosts}
@@ -30,10 +43,11 @@ export default function StepHosts({
 
       <div className="qr-advanced">
         <div className="row">
-          <button className="secondary" onClick={() => setShowAdvanced(!showAdvanced)}>
+          <button type="button" className="secondary" onClick={() => setShowAdvanced(!showAdvanced)}>
             {showAdvanced ? 'Hide advanced' : 'Advanced'}
           </button>
           <button
+            type="button"
             className="link"
             onClick={() => onShowManualHostEditor(!showManualHostEditor)}
           >
@@ -61,7 +75,7 @@ export default function StepHosts({
                 placeholder="iPad Pro"
               />
             </div>
-            <button onClick={qrModel.actions.handleManualAdd} className="secondary">
+            <button type="button" onClick={qrModel.actions.handleManualAdd} className="secondary">
               Add host
             </button>
           </div>
@@ -103,17 +117,18 @@ function HostList({
             <input type="text" value={host.uuid} readOnly />
           </div>
           <div className="row compact">
-            <button onClick={() => onMove(idx, -1)} disabled={idx === 0}>
+            <button type="button" onClick={() => onMove(idx, -1)} disabled={idx === 0}>
               ↑
             </button>
-            <button onClick={() => onMove(idx, 1)} disabled={idx === hosts.length - 1}>
+            <button type="button" onClick={() => onMove(idx, 1)} disabled={idx === hosts.length - 1}>
               ↓
             </button>
-            <button onClick={() => onRemove(idx)}>Remove</button>
+            <button type="button" onClick={() => onRemove(idx)}>
+              Remove
+            </button>
           </div>
         </div>
       ))}
     </div>
   );
 }
-
