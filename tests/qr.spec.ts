@@ -5,7 +5,7 @@ async function goToDeployWithOneHost(page: any) {
   await page.goto('/qr');
 
   // Step 1: Mode
-  await expect(page.getByTestId('mode-wifi')).toBeVisible();
+  await expect(page.getByTestId('mode-wifi')).toBeVisible({ timeout: 15000 });
   await page.getByTestId('mode-wifi').click();
   await page.getByTestId('wizard-next').click();
 
@@ -13,12 +13,14 @@ async function goToDeployWithOneHost(page: any) {
   await expect(page.getByTestId('hosts-add')).toBeVisible();
   await page.getByTestId('hosts-add').click();
 
+  await expect(page.getByTestId('host-uuid-0')).toBeVisible();
   await page.getByTestId('host-uuid-0').fill('123e4567-e89b-12d3-a456-426614174000');
   await page.getByTestId('host-name-0').fill('Main');
 
   await page.getByTestId('wizard-next').click();
 
   // Step 3: Room label + options (optional; don’t depend on labels)
+  await expect(page.getByTestId('room-label')).toBeVisible();
   await page.getByTestId('wizard-next').click();
 
   // Step 4: Review
@@ -29,7 +31,9 @@ async function goToDeployWithOneHost(page: any) {
   await page.getByTestId('wizard-next').click();
 
   // Step 5: Deploy
+  await expect(page.getByTestId('deploy-copy-link')).toBeVisible();
   await expect(page.getByTestId('deploy-download-svg')).toBeVisible();
+  await expect(page.getByTestId('deploy-download-png')).toBeVisible();
 }
 
 test('qr tool builds join url and exports svg', async ({ page }) => {

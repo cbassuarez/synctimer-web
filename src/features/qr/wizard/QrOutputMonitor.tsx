@@ -66,11 +66,17 @@ export default function QrOutputMonitor({ qrModel }: { qrModel: QrModel }) {
         )}
       </div>
       <div className="qr-output__actions qr-output__actions--compact">
-        <button type="button" onClick={() => qrModel.actions.handleCopy(qrModel.derived.joinUrl)} disabled={!isReady}>
+        <button
+          type="button"
+          data-testid="deploy-copy-link"
+          onClick={() => qrModel.actions.handleCopy(qrModel.derived.joinUrl)}
+          disabled={!isReady}
+        >
           Copy link
         </button>
         <button
           type="button"
+          data-testid="deploy-download-png"
           onClick={() => qrModel.actions.downloadPng(qrModel.derived.joinUrl, 'synctimer-qr.png', 1024, qrModel.derived.branding)}
           disabled={!isReady}
         >
@@ -78,6 +84,7 @@ export default function QrOutputMonitor({ qrModel }: { qrModel: QrModel }) {
         </button>
         <button
           type="button"
+          data-testid="deploy-download-svg"
           onClick={() => qrModel.actions.downloadSvg('synctimer-qr.svg', qrModel.derived.svgMarkup)}
           disabled={!isReady || !qrModel.derived.svgMarkup}
         >

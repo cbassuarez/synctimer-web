@@ -33,6 +33,7 @@ export default function StepRoomOptions({ qrModel }: { qrModel: QrModel }) {
           value={qrModel.state.config.roomLabel}
           onChange={(e) => qrModel.setters.setConfig({ ...qrModel.state.config, roomLabel: e.target.value })}
           placeholder="Room 12A"
+          data-testid="room-label"
         />
       </div>
 

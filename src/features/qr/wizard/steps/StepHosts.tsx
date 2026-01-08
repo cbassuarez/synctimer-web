@@ -16,19 +16,33 @@ export default function StepHosts({
   return (
     <div className="qr-step">
       <h2>Hosts</h2>
-      <p className="muted">Paste host links or add hosts manually.</p>
+      <p className="muted">Add hosts manually, or paste share links to prefill them.</p>
 
-      <div className={`field ${qrModel.state.transportHintNote ? 'is-invalid' : ''}`}>
-        <label htmlFor="host-paste">Paste Host Share Link(s)</label>
-        <textarea
-          id="host-paste"
-          rows={4}
-          value={qrModel.state.hostInput}
-          onChange={(e) => qrModel.setters.setHostInput(e.target.value)}
-          placeholder="https://synctimerapp.com/host?..."
-        />
-        {qrModel.state.transportHintNote && <p className="field-help error">{qrModel.state.transportHintNote}</p>}
-        <p className="field-help">We’ll extract host UUIDs as soon as the link is pasted.</p>
+      <details className="qr-accordion">
+        <summary>Paste host share link(s)</summary>
+        <div className={`field ${qrModel.state.transportHintNote ? 'is-invalid' : ''}`}>
+          <label htmlFor="host-paste">Paste Host Share Link(s)</label>
+          <textarea
+            id="host-paste"
+            rows={4}
+            value={qrModel.state.hostInput}
+            onChange={(e) => qrModel.setters.setHostInput(e.target.value)}
+            placeholder="https://synctimerapp.com/host?..."
+          />
+          {qrModel.state.transportHintNote && <p className="field-help error">{qrModel.state.transportHintNote}</p>}
+          <p className="field-help">We’ll extract host UUIDs as soon as the link is pasted.</p>
+        </div>
+      </details>
+
+      <div className="row">
+        <button
+          type="button"
+          className="secondary"
+          data-testid="hosts-add"
+          onClick={() => qrModel.actions.addHosts([{ uuid: '', deviceName: '' }])}
+        >
+          Add host
+        </button>
       </div>
 
       <HostList
@@ -102,7 +116,7 @@ function HostList({
   return (
     <div className="host-list">
       {hosts.map((host, idx) => (
-        <div key={host.uuid} className="host-row">
+        <div key={`host-${idx}`} className="host-row">
           <div className="field">
             <label>Host name</label>
             <input
@@ -110,11 +124,17 @@ function HostList({
               value={host.deviceName ?? ''}
               onChange={(e) => onChange(idx, { deviceName: e.target.value })}
               placeholder={deviceNames[idx]}
+              data-testid={idx === 0 ? 'host-name-0' : undefined}
             />
           </div>
           <div className="field">
             <label>UUID</label>
-            <input type="text" value={host.uuid} readOnly />
+            <input
+              type="text"
+              value={host.uuid}
+              onChange={(e) => onChange(idx, { uuid: e.target.value })}
+              data-testid={idx === 0 ? 'host-uuid-0' : undefined}
+            />
           </div>
           <div className="row compact">
             <button type="button" onClick={() => onMove(idx, -1)} disabled={idx === 0}>
