@@ -12,15 +12,15 @@ export function buildJoinUrl(config: GeneratorConfig): string {
   }
 
   if (config.roomLabel.trim()) {
-    params.set('room_label', encodeURIComponent(config.roomLabel.trim()));
+      params.set('room_label', config.roomLabel.trim());
   }
 
-  if (config.minBuild) params.set('min_build', config.minBuild);
-  if (config.minVersion) params.set('min_version', config.minVersion);
+    if (config.minBuild) params.set('min_build', String(config.minBuild));
+ // if (config.minVersion) params.set('min_version', config.minVersion);
 
   if (config.mode === 'wifi') {
     params.set('transport_hint', 'bonjour');
   }
-
-  return `https://synctimerapp.com/join?${params.toString()}`;
+    const qs = params.toString().replace(/\+/g, '%20');
+    return `https://synctimerapp.com/join?${qs}`;
 }
