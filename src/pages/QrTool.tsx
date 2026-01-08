@@ -233,9 +233,33 @@ function useQrModel(): QrModel {
 export default function QrTool() {
   const qrModel = useQrModel();
 
+// Wizard UI state (kept outside the persisted GeneratorConfig)
+  const [activeStep, setActiveStep] = useState(0);
+  const [showManualHostEditor, setShowManualHostEditor] = useState(false);
+
+  // Auto-jump to Deploy (Step 5) when arriving via share/prefill link
+  const hadIncomingHashState = useMemo(() => decodeState(window.location.hash) !== null, []);
+  const hadIncomingPrefillQuery = useMemo(() => new URLSearchParams(window.location.search).has('prefill'), []);
+  const didAutoJumpRef = useRef(false);
+
+  useEffect(() => {
+    if (didAutoJumpRef.current) return;
+    if (!hadIncomingHashState && !hadIncomingPrefillQuery) return;
+    if (qrModel.derived.validation.valid && qrModel.state.config.hosts.length > 0) {
+      didAutoJumpRef.current = true;
+      setActiveStep(4); // Step 5 = Deploy
+    }
+  }, [hadIncomingHashState, hadIncomingPrefillQuery, qrModel.derived.validation.valid, qrModel.state.config.hosts.length]);
+ 
   return (
     <Page className="qr-page">
-      <QrWizardPage qrModel={qrModel} />
+      <QrWizardPage
+        qrModel={qrModel}
+        activeStep={activeStep}
+        onStepChange={setActiveStep}
+        showManualHostEditor={showManualHostEditor}
+        onShowManualHostEditor={setShowManualHostEditor}
+      />
 
       <AnimatePresence>
         {qrModel.state.config.displayMode && qrModel.derived.validation.valid && (
