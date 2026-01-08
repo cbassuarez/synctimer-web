@@ -1,4 +1,5 @@
 import { GeneratorConfig, HostEntry, Mode, uuidRegex } from './model';
+import { decodeState } from './storage';
 
 const HOST_BASE = 'synctimerapp.com/host';
 const JOIN_BASE = 'synctimerapp.com/join';
@@ -14,8 +15,58 @@ export interface ParseJoinResult {
   transportHintWarning?: boolean;
 }
 
+export type ImportFromPasteResult =
+  | { ok: true; state: GeneratorConfig }
+  | { ok: false; error: string };
+
 function decodeName(value: string | null): string {
   return value ? decodeURIComponent(value) : '';
+}
+
+function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+function safeUrl(input: string): URL | null {
+  try {
+    return new URL(input);
+  } catch {
+    return null;
+  }
+}
+
+function extractHashState(input: string): GeneratorConfig | null {
+  const url = safeUrl(input);
+  if (url?.hash) {
+    const decoded = decodeState(url.hash);
+    if (decoded) return decoded;
+  }
+
+  const match = input.match(/#state=([A-Za-z0-9+/=]+)/);
+  if (!match) return null;
+  return decodeState(`#state=${match[1]}`);
+}
+
+function extractPrefill(input: string): string | null {
+  const url = safeUrl(input);
+  const fromUrl = url?.searchParams.get('prefill');
+  if (fromUrl) return fromUrl;
+
+  const match = input.match(/[?&]prefill=([^&#\s]+)/);
+  return match ? match[1] : null;
+}
+
+function mergeHosts(existing: HostEntry[], incoming: HostEntry[]): HostEntry[] {
+  const merged = [...existing];
+  for (const host of incoming) {
+    if (merged.some((entry) => entry.uuid === host.uuid)) continue;
+    merged.push(host);
+  }
+  return merged;
 }
 
 export function parseHostShareLinks(input: string): ParseHostsResult {
@@ -89,4 +140,60 @@ export function parseAnyInput(text: string): { hosts: HostEntry[]; join?: ParseJ
   }
   const hostResult = parseHostShareLinks(text);
   return { hosts: hostResult.hosts, join: undefined };
+}
+
+export function importFromPastedText(text: string, existingState: GeneratorConfig): ImportFromPasteResult {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return { ok: false, error: 'Paste a /qr prefill, /host, or /join link.' };
+  }
+
+  const hashState = extractHashState(trimmed);
+  let imported: Partial<GeneratorConfig> & { hosts?: HostEntry[] } = {};
+  let explicitMode = false;
+  let parseErrors: string[] = [];
+
+  if (hashState) {
+    imported = hashState;
+    explicitMode = true;
+  } else {
+    const prefill = extractPrefill(trimmed);
+    const candidate = prefill ? safeDecode(prefill) : trimmed;
+    const joinMatch = parseJoinLink(candidate);
+    if (joinMatch) {
+      imported = joinMatch.config;
+      explicitMode = true;
+      parseErrors = joinMatch.errors;
+    } else {
+      const hostResult = parseHostShareLinks(candidate);
+      imported = { hosts: hostResult.hosts };
+      parseErrors = hostResult.errors;
+    }
+  }
+
+  const incomingHosts = imported.hosts || [];
+  const nextHosts =
+    existingState.hosts.length > 0 ? mergeHosts(existingState.hosts, incomingHosts) : incomingHosts;
+  const nextMode =
+    explicitMode && imported.mode ? imported.mode : existingState.mode;
+  const nextRoomLabel = existingState.roomLabel || imported.roomLabel || '';
+  const nextMinBuild = existingState.minBuild || imported.minBuild || '';
+  const nextMinVersion = existingState.minVersion || imported.minVersion || '';
+
+  if (nextHosts.length === 0) {
+    const error = parseErrors[0] || 'No valid hosts found in the pasted link.';
+    return { ok: false, error };
+  }
+
+  return {
+    ok: true,
+    state: {
+      ...existingState,
+      mode: nextMode,
+      hosts: nextHosts,
+      roomLabel: nextRoomLabel,
+      minBuild: nextMinBuild,
+      minVersion: nextMinVersion,
+    },
+  };
 }

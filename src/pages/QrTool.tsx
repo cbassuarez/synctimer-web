@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Page from '../components/Page';
 import { buildJoinUrl } from '../features/qr/buildJoinUrl';
@@ -12,7 +12,7 @@ import {
   uuidRegex,
   validateConfig,
 } from '../features/qr/model';
-import { parseAnyInput, parseHostShareLinks, parseJoinLink } from '../features/qr/parse';
+import { importFromPastedText } from '../features/qr/parse';
 import { copyText } from '../features/qr/ui';
 import { decodeState, encodeState, loadPersistedConfig, persistConfig } from '../features/qr/storage';
 import QrWizardPage, { QrModel } from '../features/qr/wizard/QrWizardPage';
@@ -56,7 +56,6 @@ function useQrModel(): QrModel {
     patchPaddingPct: 0.1,
     printSafe: false,
   });
-  const prefillAppliedRef = useRef(false);
 
   const joinUrl = useMemo(() => buildJoinUrl(config), [config]);
   const deviceNames = useMemo(() => normalizeDeviceNames(config.hosts), [config.hosts]);
@@ -103,80 +102,39 @@ function useQrModel(): QrModel {
     });
   };
 
-  const parseAndApply = (value: string): boolean => {
+  const importFromText = (value: string): boolean => {
     const trimmed = value.trim();
-    if (!trimmed) return false;
-    const parsedJoin = parseJoinLink(trimmed);
-    if (parsedJoin) {
-      const next: GeneratorConfig = {
-        ...config,
-        ...parsedJoin.config,
-        hosts: parsedJoin.config.hosts || [],
-        displayMode: false,
-      } as GeneratorConfig;
-      setConfig(next);
-      if (parsedJoin.transportHintWarning) {
-        setTransportHintNote('Transport hint set to bonjour for Wi-Fi mode.');
-      } else {
-        setTransportHintNote(null);
-      }
-      return parsedJoin.errors.length === 0;
-    }
-    const { hosts, join } = parseAnyInput(trimmed);
-    if (join && join.config.hosts) {
-      setConfig((prev) => ({ ...prev, ...join.config, hosts: join.config.hosts } as GeneratorConfig));
-      return join.errors.length === 0;
-    }
-    const { errors } = parseHostShareLinks(trimmed);
-    if (errors.length) {
-      setTransportHintNote(errors.join('\n'));
-    } else {
+    if (!trimmed) {
       setTransportHintNote(null);
+      return false;
     }
-    addHosts(hosts);
-    return hosts.length > 0;
+    let result: ReturnType<typeof importFromPastedText> | null = null;
+    setConfig((prev) => {
+      result = importFromPastedText(trimmed, prev);
+      return result.ok ? result.state : prev;
+    });
+    if (result?.ok) {
+      setTransportHintNote(null);
+      return true;
+    }
+    if (result) {
+      setTransportHintNote(result.error);
+    }
+    return false;
   };
 
   const parseHostInput = (value: string) => {
-    parseAndApply(value);
+    importFromText(value);
   };
 
   const handleHostInputChange = (value: string) => {
     setHostInput(value);
     if (value.trim()) {
-      parseAndApply(value);
+      importFromText(value);
     } else {
       setTransportHintNote(null);
     }
   };
-
-  useEffect(() => {
-    if (prefillAppliedRef.current) return;
-    const params = new URLSearchParams(window.location.search);
-    const prefill = params.get('prefill');
-    if (!prefill) return;
-
-    prefillAppliedRef.current = true;
-
-    let decoded = '';
-    try {
-      decoded = decodeURIComponent(prefill);
-    } catch {
-      decoded = prefill;
-    }
-
-    if (hostInput.trim().length > 0 || (config.hosts?.length ?? 0) > 0) return;
-
-    setHostInput(decoded);
-    const ok = parseAndApply(decoded);
-
-    if (ok) {
-      const url = new URL(window.location.href);
-      url.searchParams.delete('prefill');
-      window.history.replaceState({}, '', url.toString());
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const handleManualAdd = () => {
     if (!uuidRegex.test(manualUuid.trim())) {
@@ -257,6 +215,7 @@ function useQrModel(): QrModel {
     actions: {
       addHosts,
       parseHostInput,
+      importFromText,
       handleManualAdd,
       updateHost,
       removeHost,

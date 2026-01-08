@@ -16,23 +16,7 @@ export default function StepHosts({
   return (
     <div className="qr-step">
       <h2>Hosts</h2>
-      <p className="muted">Add hosts manually, or paste share links to prefill them.</p>
-
-      <details className="qr-accordion">
-        <summary>Paste host share link(s)</summary>
-        <div className={`field ${qrModel.state.transportHintNote ? 'is-invalid' : ''}`}>
-          <label htmlFor="host-paste">Paste Host Share Link(s)</label>
-          <textarea
-            id="host-paste"
-            rows={4}
-            value={qrModel.state.hostInput}
-            onChange={(e) => qrModel.setters.setHostInput(e.target.value)}
-            placeholder="https://synctimerapp.com/host?..."
-          />
-          {qrModel.state.transportHintNote && <p className="field-help error">{qrModel.state.transportHintNote}</p>}
-          <p className="field-help">We’ll extract host UUIDs as soon as the link is pasted.</p>
-        </div>
-      </details>
+      <p className="muted">Review the host list and add or edit entries as needed.</p>
 
       <div className="row">
         <button
