@@ -11,6 +11,7 @@ export default function StepMode({ qrModel }: { qrModel: QrModel }) {
         <button
           type="button"
           className={`qr-mode-card ${qrModel.state.config.mode === 'wifi' ? 'is-active' : ''}`}
+          data-testid="mode-wifi"
           onClick={() => qrModel.setters.setConfig({ ...qrModel.state.config, mode: 'wifi' })}
         >
           <span className="qr-mode-card__title">Wi-Fi</span>
@@ -19,6 +20,7 @@ export default function StepMode({ qrModel }: { qrModel: QrModel }) {
         <button
           type="button"
           className={`qr-mode-card ${qrModel.state.config.mode === 'nearby' ? 'is-active' : ''}`}
+          data-testid="mode-nearby"
           onClick={() => qrModel.setters.setConfig({ ...qrModel.state.config, mode: 'nearby' })}
         >
           <span className="qr-mode-card__title">Nearby</span>

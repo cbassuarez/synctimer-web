@@ -73,19 +73,6 @@ export default function QrWizardPage({
   const [activeStep, setActiveStep] = useState(0);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('qr-wizard-step');
-    if (!stored) return;
-    const parsed = Number(stored);
-    if (!Number.isNaN(parsed) && parsed >= 0 && parsed <= 4) {
-      setActiveStep(parsed);
-    }
-  }, []);
-
-  useEffect(() => {
-    sessionStorage.setItem('qr-wizard-step', String(activeStep));
-  }, [activeStep]);
-
-  useEffect(() => {
     const onAfterPrint = () => {
       qrModel.setters.setConfig((prev) => ({ ...prev, printMode: false }));
     };
@@ -253,10 +240,22 @@ export default function QrWizardPage({
       </section>
 
       <div className="qr-wizard__nav">
-        <button type="button" className="secondary" onClick={handleBack} disabled={activeStep === 0}>
+        <button
+          type="button"
+          className="secondary"
+          data-testid="wizard-back"
+          onClick={handleBack}
+          disabled={activeStep === 0}
+        >
           Back
         </button>
-        <button type="button" className="primary" onClick={handleNext} disabled={activeStep < 4 && !canAdvance}>
+        <button
+          type="button"
+          className="primary"
+          data-testid="wizard-next"
+          onClick={handleNext}
+          disabled={activeStep < 4 && !canAdvance}
+        >
           {primaryLabel}
         </button>
       </div>
