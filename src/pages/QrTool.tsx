@@ -233,24 +233,30 @@ function useQrModel(): QrModel {
 export default function QrTool() {
   const qrModel = useQrModel();
 
-// Wizard UI state (kept outside the persisted GeneratorConfig)
   const [activeStep, setActiveStep] = useState(0);
   const [showManualHostEditor, setShowManualHostEditor] = useState(false);
 
-  // Auto-jump to Deploy (Step 5) when arriving via share/prefill link
-  const hadIncomingHashState = useMemo(() => decodeState(window.location.hash) !== null, []);
-  const hadIncomingPrefillQuery = useMemo(() => new URLSearchParams(window.location.search).has('prefill'), []);
+  // Only auto-jump when the user arrived via a shared link / prefill param
+  const initialHrefRef = useRef<string>(window.location.href);
   const didAutoJumpRef = useRef(false);
 
   useEffect(() => {
     if (didAutoJumpRef.current) return;
-    if (!hadIncomingHashState && !hadIncomingPrefillQuery) return;
-    if (qrModel.derived.validation.valid && qrModel.state.config.hosts.length > 0) {
-      didAutoJumpRef.current = true;
-      setActiveStep(4); // Step 5 = Deploy
-    }
-  }, [hadIncomingHashState, hadIncomingPrefillQuery, qrModel.derived.validation.valid, qrModel.state.config.hosts.length]);
- 
+
+    const url = new URL(initialHrefRef.current);
+    const cameFromSharedStateHash = url.hash.startsWith('#state=');
+    const cameFromPrefillParam = url.searchParams.has('prefill');
+    if (!cameFromSharedStateHash && !cameFromPrefillParam) return;
+
+    const hasHosts = (qrModel.state.config.hosts?.length ?? 0) > 0;
+    const isValid = qrModel.derived.validation.valid;
+
+    if (!hasHosts || !isValid) return;
+
+    didAutoJumpRef.current = true;
+    setActiveStep(4); // Step 5 (0-based index)
+  }, [qrModel.state.config.hosts, qrModel.derived.validation.valid]);
+
   return (
     <Page className="qr-page">
       <QrWizardPage
