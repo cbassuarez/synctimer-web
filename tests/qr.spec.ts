@@ -6,8 +6,14 @@ async function goToDeployWithOneHost(page: Page) {
 
   // If persisted hash/prefill state auto-jumped to later steps (often Step 5),
   // jump back to Step 1 via the step rail.
-  await expect(page.getByTestId('wizard-rail-step-1')).toBeVisible({ timeout: 15000 });
-  await page.getByTestId('wizard-rail-step-1').click();
+  const railStepOne = page.getByTestId('wizard-rail-step-1');
+  const railFallbackStepOne = page.locator('.qr-steps__node').first();
+  await expect(railStepOne.or(railFallbackStepOne)).toBeVisible({ timeout: 15000 });
+  if (await railStepOne.count()) {
+    await railStepOne.click();
+  } else {
+    await railFallbackStepOne.click();
+  }
   await expect(page.getByTestId('wizard-step-1')).toBeVisible({ timeout: 15000 });
 
   // Step 1: Mode
