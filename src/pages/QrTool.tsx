@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Page from '../components/Page';
 import { buildJoinUrl } from '../features/qr/buildJoinUrl';
@@ -49,6 +49,10 @@ function useQrModel(): QrModel {
   const [validation, setValidation] = useState<ValidationResult>(validateConfig(config));
   const [transportHintNote, setTransportHintNote] = useState<string | null>(null);
   const [copyMessage, setCopyMessage] = useState('');
+    const hydratedFromUrlRef = useRef(
+        window.location.href.includes('prefill=') || window.location.href.includes('#state=')
+      );
+      const [lastImportNonce, setLastImportNonce] = useState(0);
   const [branding] = useState<BrandingOptions>({
     enabled: true,
     corner: 'center',
@@ -114,6 +118,7 @@ function useQrModel(): QrModel {
       return result.ok ? result.state : prev;
     });
     if (result?.ok) {
+        setLastImportNonce((n) => n + 1);
       setTransportHintNote(null);
       return true;
     }
@@ -198,6 +203,8 @@ function useQrModel(): QrModel {
       manualDevice,
       copyMessage,
       transportHintNote,
+        hydratedFromUrl: hydratedFromUrlRef.current,
+            lastImportNonce,
     },
     setters: {
       setConfig,

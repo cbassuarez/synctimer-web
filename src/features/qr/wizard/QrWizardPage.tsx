@@ -24,6 +24,8 @@ export type QrModel = {
     manualDevice: string;
     copyMessage: string;
     transportHintNote: string | null;
+      hydratedFromUrl: boolean;
+        lastImportNonce: number;
   };
   setters: {
     setConfig: React.Dispatch<React.SetStateAction<QrModel['state']['config']>>;
@@ -73,6 +75,8 @@ export default function QrWizardPage({
   const [showManualHostEditor, setShowManualHostEditor] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const prefillAppliedRef = useRef(false);
+    const didAutoJumpRef = useRef(false);
+    const lastSeenImportNonceRef = useRef(qrModel.state.lastImportNonce);
 
   useEffect(() => {
     if (prefillAppliedRef.current) return;
@@ -88,6 +92,24 @@ export default function QrWizardPage({
       }
     }
   }, [qrModel.actions]);
+    
+    useEffect(() => {
+        if (didAutoJumpRef.current) return;
+    
+        const importJustHappened = qrModel.state.lastImportNonce !== lastSeenImportNonceRef.current;
+        if (importJustHappened) {
+          lastSeenImportNonceRef.current = qrModel.state.lastImportNonce;
+        }
+    
+        // Only auto-jump when this load was URL-hydrated (hash/prefill),
+        // or immediately after a successful import (paste/import button).
+        const shouldAutoJump = qrModel.state.hydratedFromUrl || importJustHappened;
+        if (!shouldAutoJump) return;
+        if (!qrModel.derived.validation.valid) return;
+    
+        didAutoJumpRef.current = true;
+        setActiveStep(4); // Step 5 = index 4 ("Deploy")
+      }, [qrModel.state.hydratedFromUrl, qrModel.state.lastImportNonce, qrModel.derived.validation.valid]);
 
   useEffect(() => {
     const onAfterPrint = () => {
