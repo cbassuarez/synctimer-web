@@ -1866,6 +1866,269 @@ button:disabled {
   box-shadow: var(--shadow);
 }
 
+.press-page {
+  position: relative;
+}
+
+.press-hero {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.press-hero-lead {
+  font-size: var(--step-1);
+  color: var(--muted);
+  margin: 0 0 16px;
+}
+
+.press-hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.press-hero-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.press-hero-note {
+  margin: 12px 0 0;
+}
+
+.press-factsheet {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.press-factsheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.press-factsheet-table {
+  display: grid;
+  gap: 12px;
+}
+
+.press-factsheet-row {
+  align-items: center;
+}
+
+.press-factsheet-label {
+  font-weight: 600;
+}
+
+.press-factsheet-value {
+  color: var(--muted);
+}
+
+.press-factsheet-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.press-copy-button {
+  padding: 6px 12px;
+}
+
+.press-copy-status {
+  font-size: var(--step--2);
+  color: var(--muted);
+}
+
+.press-copy-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.press-copy-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.press-copy-card h3 {
+  margin: 0;
+  font-size: var(--step-1);
+}
+
+.press-copy-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.press-copy-text {
+  margin: 0;
+  color: var(--muted);
+  white-space: pre-line;
+}
+
+.press-story-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.press-story-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.press-story-card h3 {
+  margin: 0;
+}
+
+.press-downloads {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.press-download-grid {
+  align-items: stretch;
+}
+
+.press-download-card {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.press-download-card h4 {
+  margin: 0;
+}
+
+.press-zip-structure {
+  margin-top: 16px;
+}
+
+.press-zip-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+
+.press-gallery {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.press-media-button {
+  border: none;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.press-media-button:focus-visible {
+  outline: 2px solid var(--accent);
+  border-radius: 18px;
+}
+
+.press-media-caption {
+  font-size: var(--step--2);
+  color: var(--muted);
+}
+
+.press-logo-rules {
+  margin-top: 16px;
+}
+
+.press-rule-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.press-modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  z-index: 30;
+}
+
+.press-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  border: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+.press-modal-content {
+  position: relative;
+  z-index: 1;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 18px;
+  padding: 16px;
+  max-width: min(920px, 96vw);
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.press-modal-content img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+}
+
+.press-modal-header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.press-modal-close {
+  align-self: flex-end;
+}
+
+.press-modal-caption {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+
+.press-video-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.press-video-panel video {
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid var(--hairline);
+  background: var(--bg);
+}
+
 .support-toc__title {
   margin: 0 0 12px;
   font-weight: 600;
